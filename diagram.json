@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "author": "Anonymous maker",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-arduino-nano",
+      "id": "nano",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "board-ssd1306",
+      "id": "oled1",
+      "top": -102.46,
+      "left": -86.17,
+      "attrs": { "i2cAddress": "0x3c" }
+    },
+    {
+      "type": "wokwi-ky-040",
+      "id": "encoder1",
+      "top": -112.2,
+      "left": 1.3,
+      "rotate": 90,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-clock-generator",
+      "id": "clk1",
+      "top": 19.2,
+      "left": -86.4,
+      "attrs": { "frequency": "6" }
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "pot1",
+      "top": -116.5,
+      "left": 172.6,
+      "attrs": {
+        "value": "256"
+      }
+    }
+  ],
+  "connections": [
+    ["oled1:SDA", "nano:A4", "green", ["v-38.4", "h-95.93", "v240", "h202.1"]],
+    ["nano:A5", "oled1:SCL", "green", ["v33.6", "h-221.3", "v-259.2", "h95.7"]],
+    [
+      "oled1:VCC",
+      "nano:3.3V",
+      "red",
+      ["v-28.8", "h-67.05", "v220.8", "h134.9"]
+    ],
+    [
+      "oled1:GND",
+      "nano:GND.1",
+      "black",
+      ["v-19.2", "h-48", "v201.6", "h240.5"]
+    ],
+    ["encoder1:GND", "nano:GND.2", "black", ["v28.8", "h57.3"]],
+    ["encoder1:VCC", "nano:5V", "red", ["v19.2", "h67.2", "v106", "h-19.1"]],
+    ["encoder1:CLK", "nano:2", "green", ["v48", "h9.6"]],
+    ["encoder1:DT", "nano:3", "green", ["v67.2", "h9.5"]],
+    ["nano:4", "encoder1:SW", "green", ["v-14.4", "h-19.7"]],
+    ["clk1:CLK", "nano:12", "green", ["v-48", "h38.9"]],
+    ["pot1:GND", "nano:GND.1", "black", ["v144", "h-57.1"]],
+    ["pot1:VCC", "nano:5V", "red", ["v124.8", "h-96.8"]],
+    ["nano:A0", "pot1:SIG", "green", ["v43.2", "h162.7"]]
+  ],
+  "dependencies": {}
+}

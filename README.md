@@ -1,8 +1,8 @@
 # DOTS: A 6-Channel Eurorack Trigger/Gate Module
 <p align="left" style="background-color: "#9c52f2">
-  <img src="/gh-images/frontside.jpg" alt="Image 1" width="334"/>
-  <img src="/gh-images/backside.jpg" alt="Image 2" width="334"/>
-  <img src="/gh-images/pcb.jpg" alt="Image 2" width="334"/>
+  <img src="/gh-images/frontside.jpg" alt="Image 1" width="830"/>
+  <img src="/gh-images/backside.jpg" alt="Image 2" width="830"/>
+  <img src="/gh-images/pcb.jpg" alt="Image 2" width="830"/>
 </p>
 
 ## Overview

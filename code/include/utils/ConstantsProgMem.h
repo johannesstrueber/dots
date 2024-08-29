@@ -42,7 +42,7 @@ const char configMenuOption1[] PROGMEM = "BPM";
 const char configMenuOption2[] PROGMEM = "OUT";
 const char configMenuOption3[] PROGMEM = "BOOT";
 const char configMenuOption4[] PROGMEM = "SAVE";
-const char configMenuOption5[] PROGMEM = "CLOSE";
+const char configMenuOption5[] PROGMEM = "BACK";
 
 const char *const configMenuOptions[] PROGMEM = {
     configMenuOption0,

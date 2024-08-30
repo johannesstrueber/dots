@@ -84,7 +84,7 @@
       (mirror false)
       (drillshape 0)
       (scaleselection 1)
-      (outputdirectory "../out/dots_fp_0.1.1/")
+      (outputdirectory "../out/dots_fp_1.0")
     )
   )
 
@@ -54636,7 +54636,7 @@
     (stroke (width 0.1) (type solid)) (layer "User.8") (tstamp ffad9b25-aaad-46ad-b64a-2e41004f50b6))
   (gr_line locked (start 24.245249 22.706889) (end 24.256279 22.703216)
     (stroke (width 0.1) (type solid)) (layer "User.8") (tstamp ffd0b636-bb53-41b6-b646-3b8138bab6e1))
-  (gr_text "rev 0.3\nl-i-l.de" (at 31.05 137.2) (layer "B.SilkS") (tstamp 149971dc-9542-49b2-b99c-a0902fa7835c)
+  (gr_text "rev 1.0\nl-i-l.de" (at 31.05 137.2) (layer "B.SilkS") (tstamp 149971dc-9542-49b2-b99c-a0902fa7835c)
     (effects (font (size 0.8 0.8) (thickness 0.1) bold) (justify left bottom mirror))
   )
   (gr_text "JLCJLCJLCJLC" (at 36.6 40.4) (layer "B.SilkS") (tstamp 3abd884e-3d1c-4e93-ac6f-6c55d8869437)

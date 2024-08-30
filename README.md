@@ -1,8 +1,7 @@
 # DOTS: A 6-Channel Eurorack Trigger/Gate Module
 
 ## Overview
-DOTS is a compact, 6-channel Eurorack module designed for generating triggers and gates. This open hardware project allows you to build the module yourself, with detailed instructions and resources provided. It features a screen for visual feedback and can sync with your modular system.
-
+DOTS is a compact, 6-channel Eurorack module designed for generating triggers and gates. This open hardware project allows you to build the module yourself, with instructions and resources provided. Please visit the [website](http://www.d-o-t-s.net) for more info
 <p align="left" style="background-color: "#9c52f2">
   <img src="/gh-images/frontside.jpg" alt="Image 1" width="210"/>
   <img src="/gh-images/backside.jpg" alt="Image 2" width="210"/>
@@ -13,7 +12,7 @@ DOTS is a compact, 6-channel Eurorack module designed for generating triggers an
 - **6-Channel Trigger/Gate**: Generate triggers and gates for your modular system.
 - **Compact Size**: Only 6hp wide, making it a handy addition to your setup.
 - **Sync Capabilities**: Includes a clock and reset input, allowing it to function as a master or slave.
-- **Visual Feedback**: Equipped with a screen for simple and easy-to-use UI.
+- **Visual Feedback**: Equipped with a screen and an UI.
 - **Interactive Build Guide**: Use the iBOM for an interactive Bill of Materials.
 
 ## Instructions

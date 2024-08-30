@@ -165,7 +165,7 @@ void randomLoop()
                 ranActiveChannels++;
             break;
         case RAN_ENC_MODE:
-            if (ranMode == 2)
+            if (ranMode == 1)
                 ranMode = 0;
             else
                 ranMode++;
@@ -206,8 +206,6 @@ void randomLoop()
                     digitalWrite(outputPins[i], HIGH);
                 else
                     digitalWrite(outputPins[i], LOW);
-                break;
-            case RAN_MODE_STEP:
                 break;
             }
         }

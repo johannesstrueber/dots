@@ -95,11 +95,10 @@ const char *const divModeOptions[] PROGMEM = {
 // random trigger
 const char ranModeOption1[] PROGMEM = "ALL";
 const char ranModeOption2[] PROGMEM = "SEQ";
-const char ranModeOption3[] PROGMEM = "3M";
 
 const char *const ranModeOptions[] PROGMEM = {
     ranModeOption1,
     ranModeOption2,
-    ranModeOption3};
+};
 
 #endif

@@ -28,7 +28,7 @@ Check the website for detailed instructions on how to build the module. Down bel
 
 
 ## Disclaimer
-This is a personal project and not a commercial product. The creator is not liable for any damage caused by the module. Use at your own risk. The project is licensed under the CC BY-SA 4.0 license.
+This is a personal project and not a commercial product. The creator is not liable for any damage caused by the module. Use at your own risk. The project is licensed under the CC BY-NC-SA 4.0 license.
 
 If you have any questions, feel free to contact the creator. This is a hobby project, and the creator is a web developer, not a professional hardware embedded systems builder; some hardware design or code decisions may seem unconventional.
 

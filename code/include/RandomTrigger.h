@@ -5,6 +5,11 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include "utilities/Display.h"
+#include "utilities/Encoder.h"
+#include "utilities/MenuLayout.h"
+#include "utilities/Trigger.h"
+#include "utilities/PatternMath.h"
 
 extern bool updateScreen;
 extern bool updateTrigger;
@@ -40,6 +45,9 @@ extern const char backText[];
 
 char ranBuffer[5];
 
+// Track which channels are currently triggered
+bool channelTriggered[6] = {false, false, false, false, false, false};
+
 enum RanEncoderOptions
 {
     RAN_ENC_CHANNELS = 7,
@@ -65,63 +73,67 @@ extern uint8_t ranActiveChannels;
 
 void oledRan()
 {
+    DisplayUtils::initDisplay();
 
-    display.clearDisplay();
     for (int i = 0; i < ranActiveChannels; i++)
     {
         int x = 20 * i + 11;
-        display.fillCircle(x, 36 - randomChannelValues[i] * 3, 3, WHITE);
+        int y = 36 - randomChannelValues[i] * 3;
+
+        if (channelTriggered[i])
+        {
+            display.fillCircle(x, y, 7, WHITE);
+            display.setTextColor(BLACK, WHITE);
+        }
+        else
+        {
+            display.drawCircle(x, y, 7, WHITE);
+            display.setTextColor(WHITE, BLACK);
+        }
+
+        display.setCursor(x - 2, y - 3);
+        display.print(i + 1);
 
         if (i == enc && !encLock)
-            display.drawRoundRect(x - 4, 0, 9, 36, 6, WHITE);
+            display.drawRoundRect(x - 7, 0, 15, 44, 8, WHITE);
         else
-            display.drawFastVLine(x, 0, 36, WHITE);
+        {
+            int lineEndY = y - 8;
+            if (lineEndY > 0)
+                display.drawFastVLine(x, 0, lineEndY, WHITE);
+        }
     }
 
     if (ranMode == RAN_MODE_SEQ)
         display.fillRect(20 * stepCount * 1 + 9, 43, 5, 2, WHITE);
 
-    display.setCursor(0, 48);
+    DisplayUtils::drawMenuSeparator();
+
+    // Top row menu items
+    display.setCursor(0, MenuLayout::MENU_Y_TOP);
     display.setTextColor(WHITE, BLACK);
     display.print(stepCount + 1);
     display.print("S");
 
-    display.setCursor(32, 48);
-    display.setTextColor((enc == RAN_ENC_CHANNELS) ? BLACK : WHITE, (enc == RAN_ENC_CHANNELS) ? WHITE : BLACK);
+    display.setCursor(32, MenuLayout::MENU_Y_TOP);
+    display.setTextColor((enc == RAN_ENC_CHANNELS) ? BLACK : WHITE,
+                         (enc == RAN_ENC_CHANNELS) ? WHITE : BLACK);
     display.print(ranActiveChannels);
     display.print("C");
 
-    display.setCursor(64, 48);
-
-    display.setTextColor((enc == RAN_ENC_MODE) ? BLACK : WHITE, (enc == RAN_ENC_MODE) ? WHITE : BLACK);
     strcpy_P(ranBuffer, (char *)pgm_read_word(&(ranModeOptions[ranMode])));
-    display.print(ranBuffer);
+    DisplayUtils::drawMenuItem(64, MenuLayout::MENU_Y_TOP,
+                               ranBuffer, enc == RAN_ENC_MODE);
+    DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_TOP,
+                                      isPause ? pauseText : playText, enc == RAN_ENC_PLAY, ranBuffer);
 
-    display.setCursor(96, 48);
-    display.setTextColor((enc == RAN_ENC_PLAY) ? BLACK : WHITE, (enc == RAN_ENC_PLAY) ? WHITE : BLACK);
-    strcpy_P(ranBuffer, isPause ? pauseText : playText);
-    display.print(ranBuffer);
-
-    display.setTextColor(WHITE, BLACK);
-    display.setCursor(0, 57);
-    display.print(msDelay < 0 ? msDelay * -1 : msDelay);
-    display.setCursor(18, 57);
-    display.print("D");
-
-    display.setCursor(32, 57);
-    display.print(clkMode ? intClock : bpm);
-    display.print("B");
-
-    display.setCursor(64, 57);
-    display.setTextColor((enc == RAN_ENC_RESET) ? BLACK : WHITE, (enc == RAN_ENC_RESET) ? WHITE : BLACK);
-    strcpy_P(ranBuffer, (char *)pgm_read_word(&(resetOptions[resetMode])));
-    display.print(ranBuffer);
-
-    display.setCursor(96, 57);
-    display.setTextColor((enc == RAN_ENC_BACK) ? BLACK : WHITE, (enc == RAN_ENC_BACK) ? WHITE : BLACK);
-    strcpy_P(ranBuffer, backText);
-    display.print(ranBuffer);
-
+    // Bottom row menu items
+    DisplayUtils::drawDelayDisplay(0, MenuLayout::MENU_Y_BOTTOM, msDelay);
+    DisplayUtils::drawBPMDisplay(32, MenuLayout::MENU_Y_BOTTOM, bpm, intClock, clkMode);
+    DisplayUtils::drawMenuItemFromArray(64, MenuLayout::MENU_Y_BOTTOM,
+                                        resetOptions, resetMode, enc == RAN_ENC_RESET, ranBuffer);
+    DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_BOTTOM,
+                                      backText, enc == RAN_ENC_BACK, ranBuffer);
     display.display();
 };
 
@@ -132,25 +144,21 @@ void randomLoop()
     updateScreen = false;
 
     if (msDelay < 0)
-        delay(msDelay * -1);
+        TriggerUtils::applyDelay(msDelay);
 
     if (outMode)
-        for (int i = 0; i < numChannels; i++)
-            digitalWrite(outputPins[i], LOW);
+        TriggerUtils::setAllOutputsLow();
 
     if (stepCount > ranActiveChannels - 1)
         stepCount = 0;
 
-    if (enc > RAN_ENC_BACK)
-        enc = 0;
-    else if (enc < 0)
-        enc = RAN_ENC_BACK;
+    EncoderUtils::handleEncoderBounds(enc, 0, RAN_ENC_BACK);
 
     if (encLock)
     {
         if (newPosition < oldPosition && randomChannelValues[enc] > 0)
             randomChannelValues[enc]--;
-        else if (newPosition > oldPosition && randomChannelValues[enc] < 12)
+        else if (newPosition > oldPosition && randomChannelValues[enc] < 10)
             randomChannelValues[enc]++;
         oldPosition = newPosition;
     }
@@ -171,7 +179,7 @@ void randomLoop()
                 ranMode++;
             break;
         case RAN_ENC_PLAY:
-            isPause = !isPause;
+            EncoderUtils::toggleParameter(isPause);
             break;
         case RAN_ENC_RESET:
             if (resetMode == 3)
@@ -184,7 +192,7 @@ void randomLoop()
             updateScreen = true;
             break;
         default:
-            encLock = !encLock;
+            EncoderUtils::toggleParameter(encLock);
             break;
         }
 
@@ -192,27 +200,38 @@ void randomLoop()
     if (updateTrigger)
         for (int i = 0; i < ranActiveChannels; i++)
         {
-            int trigger = random(0, 12) < randomChannelValues[i];
+            int trigger = random(0, 10) < randomChannelValues[i];
             switch (ranMode)
             {
             case RAN_MODE_ALL:
                 if (trigger)
-                    digitalWrite(outputPins[i], HIGH);
+                {
+                    TriggerUtils::setOutput(i, true);
+                    channelTriggered[i] = true;
+                }
                 else
-                    digitalWrite(outputPins[i], LOW);
+                {
+                    TriggerUtils::setOutput(i, false);
+                    channelTriggered[i] = false;
+                }
                 break;
             case RAN_MODE_SEQ:
                 if (trigger && i == stepCount)
-                    digitalWrite(outputPins[i], HIGH);
+                {
+                    TriggerUtils::setOutput(i, true);
+                    channelTriggered[i] = true;
+                }
                 else
-                    digitalWrite(outputPins[i], LOW);
+                {
+                    TriggerUtils::setOutput(i, false);
+                    channelTriggered[i] = false;
+                }
                 break;
             }
         }
 
     delay(30);
-    if (msDelay > 0)
-        delay(msDelay);
+    TriggerUtils::applyDelay(msDelay);
 }
 
 #endif

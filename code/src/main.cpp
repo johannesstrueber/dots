@@ -1,6 +1,7 @@
-#include "utils/SplashScreen.h"
-#include "utils/Startup.h"
-#include "utils/ConstantsProgMem.h"
+#include "utilities/SplashScreen.h"
+#include "utilities/Startup.h"
+#include "constants/ConstantsProgMem.h"
+#include "utilities/Bit.h"
 
 #include <Arduino.h>
 #include <EEPROM.h>
@@ -60,6 +61,7 @@ enum MainPages
 {
   MAIN_MENU,
   SEQUENCER,
+  EUCLIDEAN_SEQUENCER,
   RANDOM_TRIGGER,
   CLOCK_DIVIDER,
   CONFIG,
@@ -71,6 +73,7 @@ int8_t oldPosition = -2;
 
 bool updateScreen = true;
 bool updateTrigger = true;
+bool needsThrottledUpdate = false;
 bool button = false;
 bool oldButton = false;
 bool buttonOn = false;
@@ -79,13 +82,19 @@ int16_t potIn = 0;
 int8_t randomValuePotIn = 0;
 int8_t msDelay = 0;
 
+unsigned long lastScreenUpdate = 0;
+const unsigned long SCREEN_UPDATE_INTERVAL = 200;
+
+unsigned long lastInternalClockStep = 0;
+
 #include "MainMenu.h"
 #include "Sequencer.h"
+#include "EuclideanSequencer.h"
 #include "RandomTrigger.h"
 #include "ClockDivider.h"
 #include "ConfigMenu.h"
 #include "Instructions.h"
-#include "utils/HandleReset.h"
+#include "utilities/HandleReset.h"
 
 void setup()
 {
@@ -106,6 +115,7 @@ void setup()
   bootMode = EEPROM.read(392);
   outMode = EEPROM.read(393);
   resetMode = EEPROM.read(387);
+
   // sequencer
   for (int pa = 0; pa < pages; pa++)
     for (int ro = 0; ro < rows; ro++)
@@ -116,19 +126,32 @@ void setup()
         if (safeByteIndex < seqMatrixSize)
         {
           if (EEPROM.read(safeByteIndex) & (1 << (index % 8)))
-            setBit(pa, ro, co);
+            BitUtils::setBit(pa, ro, co);
           else
-            clearBit(pa, ro, co);
+            BitUtils::clearBit(pa, ro, co);
         }
       }
   seqCurrentPage = EEPROM.read(384);
   seqCurrentLength = EEPROM.read(385);
   seqCurrentOffset = EEPROM.read(386);
+
   // clock divider
   divMode = EEPROM.read(394);
+
   // ran trigger
   ranMode = EEPROM.read(395);
   ranActiveChannels = EEPROM.read(396);
+
+  // load euclidean sequencer settings addresses -421
+  eucPatternLength = EEPROM.read(397);
+  for (int i = 0; i < 6; i++)
+  {
+    int baseAddr = 398 + (i * 4);
+    eucTracks[i].steps = EEPROM.read(baseAddr);
+    eucTracks[i].hits = EEPROM.read(baseAddr + 1);
+    eucTracks[i].rotation = EEPROM.read(baseAddr + 2);
+    eucTracks[i].mute = EEPROM.read(baseAddr + 3);
+  }
 
   if (seqCurrentPage > pages)
     seqCurrentPage = 1;
@@ -148,6 +171,19 @@ void setup()
     ranMode = 0;
   if (ranActiveChannels > 6)
     ranActiveChannels = 6;
+
+  if (eucPatternLength < 1 || eucPatternLength > 32)
+    eucPatternLength = 16;
+
+  for (int i = 0; i < 6; i++)
+  {
+    if (eucTracks[i].steps < 1 || eucTracks[i].steps > 32)
+      eucTracks[i].steps = 16;
+    if (eucTracks[i].hits > eucTracks[i].steps)
+      eucTracks[i].hits = eucTracks[i].steps / 2;
+    if (eucTracks[i].rotation >= eucTracks[i].steps)
+      eucTracks[i].rotation = 0;
+  }
   if (ranActiveChannels < 1)
     ranActiveChannels = 1;
 
@@ -156,6 +192,8 @@ void setup()
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   splashScreen();
   startupBlink();
+
+  updateEuclideanPatterns();
 }
 
 void loop()
@@ -169,8 +207,7 @@ void loop()
   newPosition = Enc.read();
 
   if (outMode || isPause)
-    for (int i = 0; i < numChannels; i++)
-      digitalWrite(outputPins[i], LOW);
+    TriggerUtils::setAllOutputsLow();
 
   if (!oldButton && button)
   {
@@ -196,10 +233,16 @@ void loop()
 
     else if (clkMode)
     {
-      delay(15000 / intClock);
-      stepCount++;
-      updateScreen = true;
-      updateTrigger = true;
+      unsigned long currentTime = millis();
+      unsigned long stepInterval = 15000 / intClock;
+
+      if (currentTime - lastInternalClockStep >= stepInterval)
+      {
+        stepCount++;
+        updateScreen = true;
+        updateTrigger = true;
+        lastInternalClockStep = currentTime;
+      }
     }
     potIn = analogRead(A0);
     randomValuePotIn = random(-100, 100);
@@ -212,21 +255,40 @@ void loop()
     oldPosition = newPosition;
     if (!encLock)
       enc--;
-    updateScreen = true;
-    updateTrigger = false;
+    if (isPause || (page != SEQUENCER && page != EUCLIDEAN_SEQUENCER))
+      updateScreen = true;
+    else
+      needsThrottledUpdate = true;
+
+    if (!clkMode)
+      updateTrigger = false;
   }
   else if (newPosition - 2 > oldPosition)
   {
     oldPosition = newPosition;
     if (!encLock)
       enc++;
-    updateScreen = true;
-    updateTrigger = false;
+    if (isPause || (page != SEQUENCER && page != EUCLIDEAN_SEQUENCER))
+      updateScreen = true;
+    else
+      needsThrottledUpdate = true;
+
+    if (!clkMode)
+      updateTrigger = false;
   }
 
   handleReset();
 
+  if (needsThrottledUpdate && (millis() - lastScreenUpdate >= SCREEN_UPDATE_INTERVAL))
+  {
+    updateScreen = true;
+    needsThrottledUpdate = false;
+    lastScreenUpdate = millis();
+  }
+
   if (updateScreen)
+  {
+    lastScreenUpdate = millis();
     switch (page)
     {
     case MAIN_MENU:
@@ -234,6 +296,9 @@ void loop()
       break;
     case SEQUENCER:
       sequencerLoop();
+      break;
+    case EUCLIDEAN_SEQUENCER:
+      euclideanLoop();
       break;
     case RANDOM_TRIGGER:
       randomLoop();
@@ -248,4 +313,5 @@ void loop()
       instructionsLoop();
       break;
     }
+  }
 }

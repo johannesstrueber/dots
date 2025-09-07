@@ -7,7 +7,7 @@
 
 extern Adafruit_SSD1306 display;
 
-const char splashScreenText[] PROGMEM = "DOTS 1.0";
+const char splashScreenText[] PROGMEM = "DOTS 1.1";
 char splashScreenTextBuffer[9];
 
 void splashScreen()

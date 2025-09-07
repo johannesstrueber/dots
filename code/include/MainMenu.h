@@ -4,6 +4,10 @@
 #include <Arduino.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include "utilities/Display.h"
+#include "utilities/Encoder.h"
+#include "utilities/MenuLayout.h"
+#include "utilities/Trigger.h"
 
 char buffer[18];
 char headerBuffer[12];
@@ -25,27 +29,23 @@ extern const char *const configMenuOptions[];
 
 void mainMenuOled()
 {
-    display.clearDisplay();
+    DisplayUtils::initDisplay();
     display.setCursor(0, 0);
-    display.setTextColor(WHITE, BLACK);
     strcpy_P(headerBuffer, headerText);
     display.print(headerBuffer);
-    for (int i = 0; i < 5; i++)
+
+    for (int i = 0; i < 6; i++)
     {
-        display.setCursor(0, 14 + i * 10);
-        display.setTextColor((enc == i) ? BLACK : WHITE, (enc == i) ? WHITE : BLACK);
-        strcpy_P(buffer, (char *)pgm_read_word(&(mainMenuOptions[i])));
-        display.print(buffer);
+        DisplayUtils::drawMenuItemFromArray(0, 14 + i * 8, mainMenuOptions, i, enc == i, buffer);
     }
     display.display();
 }
 
 void mainMenuLoop()
 {
-    for (int i = 0; i < numChannels; i++)
-        digitalWrite(outputPins[i], LOW);
+    TriggerUtils::setAllOutputsLow();
 
-    enc = enc > 4 ? 0 : (enc < 0 ? 4 : enc);
+    EncoderUtils::handleEncoderBounds(enc, 0, 5);
 
     updateScreen = false;
     if (buttonOn)

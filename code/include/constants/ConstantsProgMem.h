@@ -8,17 +8,19 @@
 const char headerText[] PROGMEM = "SELECT MODE";
 
 const char mainMenuOption1[] PROGMEM = "1. SEQUENCER";
-const char mainMenuOption2[] PROGMEM = "2. RANDOM TRIGGER";
-const char mainMenuOption3[] PROGMEM = "3. CLOCK DIVIDER";
-const char mainMenuOption4[] PROGMEM = "4. CONFIG";
-const char mainMenuOption5[] PROGMEM = "5. INSTRUCTIONS";
+const char mainMenuOption2[] PROGMEM = "2. EUCLIDEAN";
+const char mainMenuOption3[] PROGMEM = "3. RANDOM TRIGGER";
+const char mainMenuOption4[] PROGMEM = "4. CLOCK DIVIDER";
+const char mainMenuOption5[] PROGMEM = "5. CONFIG";
+const char mainMenuOption6[] PROGMEM = "6. INSTRUCTIONS";
 
 const char *const mainMenuOptions[] PROGMEM = {
     mainMenuOption1,
     mainMenuOption2,
     mainMenuOption3,
     mainMenuOption4,
-    mainMenuOption5};
+    mainMenuOption5,
+    mainMenuOption6};
 
 // multi usage
 const char resetOption1[] PROGMEM = "RST";

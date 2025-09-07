@@ -7,6 +7,12 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include "utilities/Display.h"
+#include "utilities/Encoder.h"
+#include "utilities/MenuLayout.h"
+#include "utilities/Trigger.h"
+#include "utilities/PatternMath.h"
+#include "utilities/Bit.h"
 
 #define OLED_ADDRESS 0x3C
 #define SCREEN_WIDTH 128
@@ -87,10 +93,6 @@ extern bool button;
 extern bool resetIn;
 extern bool oldResetIn;
 
-#include "utils/SetBit.h"
-#include "utils/ClearBit.h"
-#include "utils/IsBitSet.h"
-
 void oledSeq()
 {
     display.setCursor(0, 0);
@@ -102,7 +104,7 @@ void oledSeq()
         {
             for (int col = 0; col < cols; col++)
             {
-                bool isActive = isBitSet(seqCurrentPage - 1, row, col);
+                bool isActive = BitUtils::isBitSet(seqCurrentPage - 1, row, col);
                 uint8_t x = col * 8;
                 uint8_t y = row * 7;
 
@@ -117,12 +119,10 @@ void oledSeq()
         }
         if (enc < SEQ_ENC_PAGE)
         {
-            // Draw the position marker
             uint8_t markerX = markerCol * 8;
             uint8_t markerY = markerRow * 7;
 
-            // draw black background
-            bool color = isBitSet(seqCurrentPage - 1, markerRow, markerCol);
+            bool color = BitUtils::isBitSet(seqCurrentPage - 1, markerRow, markerCol);
 
             display.fillRoundRect(markerX + 1, markerY + 1, RECT_WIDTH - 1, RECT_HEIGHT - 1, 5, color ? BLACK : WHITE);
             display.fillRoundRect(markerX + 2, markerY + 2, RECT_WIDTH - 3, RECT_HEIGHT - 3, 3, color ? WHITE : BLACK);
@@ -138,72 +138,54 @@ void oledSeq()
     }
     display.fillRect((stepCount + 1) * 8 - 6, 43, 4, 2, WHITE);
 
-    display.setCursor(0, 48);
+    // Top row menu items - using page display (custom)
+    display.setCursor(0, MenuLayout::MENU_Y_TOP);
     display.setTextColor((enc == SEQ_ENC_PAGE) ? BLACK : WHITE, (enc == SEQ_ENC_PAGE) ? WHITE : BLACK);
     display.print(seqCurrentPage);
     display.print("/");
     display.print(pages);
     display.print("P");
 
-    display.setCursor(32, 48);
+    // Length display (custom format)
+    display.setCursor(32, MenuLayout::MENU_Y_TOP);
     display.setTextColor((enc == SEQ_ENC_LENGTH) ? BLACK : WHITE, (enc == SEQ_ENC_LENGTH) ? WHITE : BLACK);
     display.print(seqCurrentLength);
     strcpy_P(seqBuffer, lengthText);
     display.print(seqBuffer);
 
-    display.setCursor(64, 48);
+    // Offset display (custom format)
+    display.setCursor(64, MenuLayout::MENU_Y_TOP);
     display.setTextColor((enc == SEQ_ENC_OFFSET) ? BLACK : WHITE, (enc == SEQ_ENC_OFFSET) ? WHITE : BLACK);
     display.print(seqCurrentOffset);
     strcpy_P(seqBuffer, offsetText);
     display.print(seqBuffer);
 
-    display.setCursor(96, 48);
-    display.setTextColor((enc == SEQ_ENC_PLAY) ? BLACK : WHITE, (enc == SEQ_ENC_PLAY) ? WHITE : BLACK);
-    strcpy_P(seqBuffer, isPause ? pauseText : playText);
-    display.print(seqBuffer);
+    DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_TOP, isPause ? pauseText : playText, enc == SEQ_ENC_PLAY, seqBuffer);
 
-    display.setCursor(0, 57);
-    display.setTextColor(WHITE, BLACK);
-    display.print(msDelay < 0 ? msDelay * -1 : msDelay);
-    display.setCursor(18, 57);
-    display.print("D");
-
-    display.setCursor(32, 57);
-    display.print(clkMode ? intClock : bpm);
-    display.print("B");
-
-    display.setCursor(64, 57);
-    display.setTextColor((enc == SEQ_ENC_RESET) ? BLACK : WHITE, (enc == SEQ_ENC_RESET) ? WHITE : BLACK);
-    strcpy_P(seqBuffer, (char *)pgm_read_word(&(resetOptions[resetMode])));
-    display.print(seqBuffer);
-
-    display.setCursor(96, 57);
-    display.setTextColor((enc == SEQ_ENC_BACK) ? BLACK : WHITE, (enc == SEQ_ENC_BACK) ? WHITE : BLACK);
-    strcpy_P(seqBuffer, backText);
-    display.print(seqBuffer);
+    // Bottom row menu items
+    DisplayUtils::drawDelayDisplay(0, MenuLayout::MENU_Y_BOTTOM, msDelay);
+    DisplayUtils::drawBPMDisplay(32, MenuLayout::MENU_Y_BOTTOM, bpm, intClock, clkMode);
+    DisplayUtils::drawMenuItemFromArray(64, MenuLayout::MENU_Y_BOTTOM, resetOptions, resetMode, enc == SEQ_ENC_RESET, seqBuffer);
+    DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_BOTTOM, backText, enc == SEQ_ENC_BACK, seqBuffer);
 
     display.display();
 };
 
 void toggleMatrixCell(int page, int row, int col)
 {
-    if (isBitSet(page, row, col))
-        clearBit(page, row, col);
+    if (BitUtils::isBitSet(page, row, col))
+        BitUtils::clearBit(page, row, col);
     else
-        setBit(page, row, col);
+        BitUtils::setBit(page, row, col);
 }
 
 void sequencerLoop()
 {
     updateScreen = false;
 
-    if (msDelay < 0)
-        delay(msDelay * -1);
+    TriggerUtils::applyDelay(msDelay);
 
-    if (enc > SEQ_ENC_BACK)
-        enc = 0;
-    else if (enc < 0)
-        enc = SEQ_ENC_BACK;
+    EncoderUtils::handleEncoderBounds(enc, 0, SEQ_ENC_BACK);
 
     if (enc < cols * rows)
     {
@@ -242,7 +224,7 @@ void sequencerLoop()
                 resetMode++;
             break;
         case SEQ_ENC_PLAY:
-            isPause = !isPause;
+            EncoderUtils::toggleParameter(isPause);
             break;
         case SEQ_ENC_BACK:
             page = 0;
@@ -253,7 +235,9 @@ void sequencerLoop()
             break;
         }
 
-    if (stepCount >= cols)
+    TriggerUtils::handleStepOverflow(stepCount, cols);
+
+    if (stepCount == 0 && !isPause && updateTrigger)
     {
         if (seqCurrentPage <= pages)
         {
@@ -269,18 +253,18 @@ void sequencerLoop()
     }
 
     if (!isPause && updateTrigger)
+    {
         for (int i = 0; i < numChannels; i++)
         {
-            if (!isBitSet(seqCurrentPage - 1, i, stepCount))
-                digitalWrite(outputPins[i], HIGH);
-            else
-                digitalWrite(outputPins[i], LOW);
+            bool shouldTrigger = !BitUtils::isBitSet(seqCurrentPage - 1, i, stepCount);
+            TriggerUtils::setOutput(i, shouldTrigger);
         }
+        updateTrigger = false;
+    }
 
     oledSeq();
 
-    if (msDelay > 0)
-        delay(msDelay);
+    TriggerUtils::applyDelay(msDelay);
 }
 
 #endif

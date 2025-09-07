@@ -7,6 +7,9 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include "utilities/Display.h"
+#include "utilities/Encoder.h"
+#include "utilities/MenuLayout.h"
 
 extern Encoder Enc;
 extern int8_t enc;
@@ -44,6 +47,9 @@ extern uint8_t divMode;
 extern uint8_t ranMode;
 extern uint8_t ranActiveChannels;
 
+extern EuclideanTrack eucTracks[6];
+extern uint8_t eucPatternLength;
+
 extern const uint8_t seqMatrixSize;
 extern byte seqMatrix[seqMatrixSize];
 
@@ -58,18 +64,15 @@ extern bool buttonOn;
 
 void oledConfigMenu()
 {
-    display.clearDisplay();
+    DisplayUtils::initDisplay();
+    char configBuffer[5];
+
     for (int i = 0; i < configMenuOptionCount; i++)
     {
-        display.setCursor(0, i * 9);
-        char configBuffer[5];
-
-        display.setTextColor((enc == i) ? BLACK : WHITE, (enc == i) ? WHITE : BLACK);
-        strcpy_P(configBuffer, (char *)pgm_read_word(&(configMenuOptions[i])));
-        display.print(configBuffer);
+        DisplayUtils::drawMenuItemFromArray(0, i * 9, configMenuOptions, i, enc == i, configBuffer);
     }
-    char configBuffer[5];
-    display.setTextColor(WHITE);
+
+    display.setTextColor(WHITE, BLACK);
     display.setCursor(64, 0);
     strcpy_P(configBuffer, clkMode ? clkOptionInt : clkOptionExt);
     display.print(configBuffer);
@@ -108,29 +111,23 @@ void configMenuLoop()
     else if (intClock < 10)
         intClock = 10;
 
-    if (enc > configMenuOptionCount)
-        enc = 0;
-
-    else if (enc < 0)
-        enc = configMenuOptionCount - 1;
+    EncoderUtils::handleEncoderBounds(enc, 0, configMenuOptionCount - 1);
 
     if (buttonOn)
         switch (enc)
         {
         case CLK:
-            clkMode = !clkMode;
+            EncoderUtils::toggleParameter(clkMode);
             break;
         case BPM:
-            encLock = !encLock;
+            EncoderUtils::toggleParameter(encLock);
             enc = 1;
             break;
         case OUT:
-            outMode = !outMode;
+            EncoderUtils::toggleParameter(outMode);
             break;
         case BOOT:
-            bootMode++;
-            if (bootMode > 3)
-                bootMode = 0;
+            EncoderUtils::cycleEnum(bootMode, 3);
             break;
         case SAVE:
             for (int i = 0; i < seqMatrixSize; i++)
@@ -150,6 +147,16 @@ void configMenuLoop()
             EEPROM.write(394, divMode);
             EEPROM.write(395, ranMode);
             EEPROM.write(396, ranActiveChannels);
+
+            EEPROM.write(397, eucPatternLength);
+            for (int i = 0; i < 6; i++)
+            {
+                int baseAddr = 398 + (i * 4);
+                EEPROM.write(baseAddr, eucTracks[i].steps);
+                EEPROM.write(baseAddr + 1, eucTracks[i].hits);
+                EEPROM.write(baseAddr + 2, eucTracks[i].rotation);
+                EEPROM.write(baseAddr + 3, eucTracks[i].mute);
+            }
             break;
         case BACK:
             updateScreen = true;

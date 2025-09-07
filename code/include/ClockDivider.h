@@ -5,6 +5,11 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include "utilities/Display.h"
+#include "utilities/Encoder.h"
+#include "utilities/MenuLayout.h"
+#include "utilities/Trigger.h"
+#include "utilities/PatternMath.h"
 
 extern int8_t numChannels;
 extern const uint8_t outputPins[];
@@ -83,48 +88,23 @@ void calculateFibonacci(int n, int *fibonacciSequence)
 
 void oledClockDivider()
 {
-    display.clearDisplay();
+    DisplayUtils::initDisplay();
     int fibonacciSequence[numChannels];
     calculateFibonacci(numChannels, fibonacciSequence);
 
-    display.setTextColor(WHITE, BLACK);
-    display.setCursor(0, 48);
-    display.print(stepCount + 1);
-    display.print("S");
+    DisplayUtils::drawMenuSeparator();
 
-    display.setCursor(32, 48);
-    display.setTextColor((enc == DIV_ENC_MODE) ? BLACK : WHITE, (enc == DIV_ENC_MODE) ? WHITE : BLACK);
-    strcpy_P(divBuffer, (char *)pgm_read_word(&(divModeOptions[divMode])));
-    display.print(divBuffer);
+    // Top row menu items
+    DisplayUtils::drawStepCounter(0, MenuLayout::MENU_Y_TOP, stepCount);
+    DisplayUtils::drawMenuItemFromArray(32, MenuLayout::MENU_Y_TOP, divModeOptions, divMode, enc == DIV_ENC_MODE, divBuffer);
+    DisplayUtils::drawMenuItem(64, MenuLayout::MENU_Y_TOP, "--", false);
+    DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_TOP, isPause ? pauseText : playText, enc == DIV_ENC_PLAY, divBuffer);
 
-    display.setCursor(64, 48);
-    display.setTextColor(WHITE, BLACK);
-    display.print("--");
-
-    display.setCursor(96, 48);
-    display.setTextColor((enc == DIV_ENC_PLAY) ? BLACK : WHITE, (enc == DIV_ENC_PLAY) ? WHITE : BLACK);
-    strcpy_P(divBuffer, isPause ? pauseText : playText);
-    display.print(divBuffer);
-
-    display.setTextColor(WHITE, BLACK);
-    display.setCursor(0, 57);
-    display.print(msDelay < 0 ? msDelay * -1 : msDelay);
-    display.setCursor(18, 57);
-    display.print("D");
-
-    display.setCursor(32, 57);
-    display.print(clkMode ? intClock : bpm);
-    display.print("B");
-
-    display.setCursor(64, 57);
-    display.setTextColor((enc == DIV_ENC_RESET) ? BLACK : WHITE, (enc == DIV_ENC_RESET) ? WHITE : BLACK);
-    strcpy_P(divBuffer, (char *)pgm_read_word(&(resetOptions[resetMode])));
-    display.print(divBuffer);
-
-    display.setCursor(96, 57);
-    display.setTextColor((enc == DIV_ENC_BACK) ? BLACK : WHITE, (enc == DIV_ENC_BACK) ? WHITE : BLACK);
-    strcpy_P(divBuffer, backText);
-    display.print(divBuffer);
+    // Bottom row menu items
+    DisplayUtils::drawDelayDisplay(0, MenuLayout::MENU_Y_BOTTOM, msDelay);
+    DisplayUtils::drawBPMDisplay(32, MenuLayout::MENU_Y_BOTTOM, bpm, intClock, clkMode);
+    DisplayUtils::drawMenuItemFromArray(64, MenuLayout::MENU_Y_BOTTOM, resetOptions, resetMode, enc == DIV_ENC_RESET, divBuffer);
+    DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_BOTTOM, backText, enc == DIV_ENC_BACK, divBuffer);
 
     for (int i = 0; i < numChannels; i++)
     {
@@ -152,9 +132,18 @@ void oledClockDivider()
         }
 
         if (shouldFill)
+        {
             display.fillCircle(x, y, 9, WHITE);
+            display.setTextColor(BLACK, WHITE);
+        }
         else
+        {
             display.drawCircle(x, y, 9, WHITE);
+            display.setTextColor(WHITE, BLACK);
+        }
+
+        display.setCursor(x - 3, y - 4);
+        display.print(i + 1);
     }
     display.display();
 }
@@ -164,7 +153,7 @@ void clockDividerLoop()
     updateScreen = false;
 
     if (msDelay < 0)
-        delay(msDelay * -1);
+        TriggerUtils::applyDelay(msDelay);
 
     oldResetIn = resetIn;
     oldButton = button;
@@ -173,22 +162,16 @@ void clockDividerLoop()
     calculateFibonacci(numChannels, fibonacciSequence);
 
     if (outMode)
-        for (int i = 0; i < numChannels; i++)
-        {
-            digitalWrite(outputPins[i], LOW);
-        }
+        TriggerUtils::setAllOutputsLow();
 
-    if (enc < 0)
-        enc = DIV_ENC_BACK;
-    else if (enc > DIV_ENC_BACK)
-        enc = 0;
+    EncoderUtils::handleEncoderBounds(enc, 0, DIV_ENC_BACK);
 
     if (buttonOn)
     {
         switch (enc)
         {
         case DIV_ENC_PLAY:
-            isPause = !isPause;
+            EncoderUtils::toggleParameter(isPause);
             break;
         case DIV_ENC_MODE:
             divMode = divMode > 3 ? 0 : divMode + 1;
@@ -239,11 +222,10 @@ void clockDividerLoop()
                 value = ((stepCount % 2 == 0 && i % 2 == 0) || (stepCount % 2 != 0 && i % 2 != 0)) ? HIGH : LOW;
                 break;
             }
-            digitalWrite(outputPins[i], value);
+            TriggerUtils::setOutput(i, value == HIGH);
         }
     delay(30);
-    if (msDelay > 0)
-        delay(msDelay);
+    TriggerUtils::applyDelay(msDelay);
 }
 
 #endif

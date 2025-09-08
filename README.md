@@ -40,10 +40,16 @@ Check the [website](http://www.d-o-t-s.net) for detailed instructions on how to 
 
 ## Disclaimer
 
-This is a personal project and not a commercial product. The creator is not liable for any damage caused by the module. Use at your own risk. The project is licensed under the CC BY-SA 4.0 license.
+This is a personal project and not a commercial product. The creator is not liable for any damage caused by the module. Use at your own risk. The project is licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License][cc-by-nc-sa].
+
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
 
 If you have any questions, feel free to contact the creator. This is a hobby project, and the creator is a web developer, not a professional hardware embedded systems builder; some hardware design or code decisions may seem unconventional.
 
 Special thanks to HAGIWO for providing foundational knowledge.
 
 Happy Building!
+
+
+[cc-by-nc-sa]: http://creativecommons.org/licenses/by-nc-sa/4.0/
+[cc-by-nc-sa-shield]: https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg

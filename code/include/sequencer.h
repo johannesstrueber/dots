@@ -1,18 +1,18 @@
 #ifndef SEQUENCER_H
 #define SEQUENCER_H
 
-#include <Arduino.h>
-#include <Encoder.h>
-#include <EEPROM.h>
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#include "utilities/Bit.h"
 #include "utilities/Display.h"
 #include "utilities/Encoder.h"
 #include "utilities/MenuLayout.h"
-#include "utilities/Trigger.h"
 #include "utilities/PatternMath.h"
-#include "utilities/Bit.h"
+#include "utilities/Trigger.h"
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <Arduino.h>
+#include <EEPROM.h>
+#include <Encoder.h>
+#include <Wire.h>
 
 #define OLED_ADDRESS 0x3C
 #define SCREEN_WIDTH 128
@@ -64,15 +64,7 @@ extern const char offsetText[];
 
 extern const char *const resetOptions[];
 
-enum SeqEncoderOptions
-{
-    SEQ_ENC_PAGE = 96,
-    SEQ_ENC_LENGTH,
-    SEQ_ENC_OFFSET,
-    SEQ_ENC_PLAY,
-    SEQ_ENC_RESET,
-    SEQ_ENC_BACK
-};
+enum SeqEncoderOptions { SEQ_ENC_PAGE = 96, SEQ_ENC_LENGTH, SEQ_ENC_OFFSET, SEQ_ENC_PLAY, SEQ_ENC_RESET, SEQ_ENC_BACK };
 
 char seqBuffer[6];
 
@@ -93,32 +85,25 @@ extern bool button;
 extern bool resetIn;
 extern bool oldResetIn;
 
-void oledSeq()
-{
+void oledSeq() {
     display.setCursor(0, 0);
 
-    if (enc > 0 || enc < SEQ_ENC_PAGE || previousPage != seqCurrentPage)
-    {
+    if (enc > 0 || enc < SEQ_ENC_PAGE || previousPage != seqCurrentPage) {
         display.clearDisplay();
-        for (int row = 0; row < rows; row++)
-        {
-            for (int col = 0; col < cols; col++)
-            {
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
                 bool isActive = BitUtils::isBitSet(seqCurrentPage - 1, row, col);
                 uint8_t x = col * 8;
                 uint8_t y = row * 7;
 
-                if (isActive)
-                {
+                if (isActive) {
                     display.drawFastVLine(x + RECT_WIDTH, y + 2, RECT_HEIGHT - 4, WHITE);
                     display.drawFastHLine(x + 3, y + RECT_HEIGHT, RECT_WIDTH - 5, WHITE);
-                }
-                else
+                } else
                     display.fillRoundRect(x, y, RECT_WIDTH + 1, RECT_HEIGHT, 5, WHITE);
             }
         }
-        if (enc < SEQ_ENC_PAGE)
-        {
+        if (enc < SEQ_ENC_PAGE) {
             uint8_t markerX = markerCol * 8;
             uint8_t markerY = markerRow * 7;
 
@@ -131,8 +116,7 @@ void oledSeq()
 
     display.drawFastVLine(0, 0, 41, BLACK);
     display.fillRect(0, 42, 128, 3, BLACK);
-    for (int i = 1; i * barLength < cols; i++)
-    {
+    for (int i = 1; i * barLength < cols; i++) {
         uint8_t xPosition = i * barLength * 8;
         display.fillRect(xPosition, 43, 1, 2, WHITE);
     }
@@ -171,91 +155,81 @@ void oledSeq()
     display.display();
 };
 
-void toggleMatrixCell(int page, int row, int col)
-{
+void toggleMatrixCell(int page, int row, int col) {
     if (BitUtils::isBitSet(page, row, col))
         BitUtils::clearBit(page, row, col);
     else
         BitUtils::setBit(page, row, col);
 }
 
-void sequencerLoop()
-{
+void sequencerLoop() {
     updateScreen = false;
 
     TriggerUtils::applyDelay(msDelay);
 
     EncoderUtils::handleEncoderBounds(enc, 0, SEQ_ENC_BACK);
 
-    if (enc < cols * rows)
-    {
+    if (enc < cols * rows) {
         markerCol = enc % cols;
         markerRow = enc / cols;
     }
 
     if (buttonOn)
-        switch (enc)
-        {
-        case SEQ_ENC_PAGE:
-            previousPage = seqCurrentPage;
-            seqCurrentPage = seqCurrentPage >= pages ? 1 : seqCurrentPage + 1;
-            break;
-        case SEQ_ENC_LENGTH:
-            if (seqCurrentLength == pages)
-            {
-                seqCurrentLength = 1;
-                return;
-            }
-            if (seqCurrentLength + seqCurrentOffset >= pages)
-                return;
-            seqCurrentLength++;
-            break;
-        case SEQ_ENC_OFFSET:
-            if (seqCurrentOffset == pages - 1)
-                seqCurrentOffset = 0;
-            if (seqCurrentOffset + seqCurrentLength >= pages)
-                seqCurrentOffset = 0;
-            seqCurrentOffset++;
-            break;
-        case SEQ_ENC_RESET:
-            if (resetMode == 5)
-                resetMode = 0;
-            else
-                resetMode++;
-            break;
-        case SEQ_ENC_PLAY:
-            EncoderUtils::toggleParameter(isPause);
-            break;
-        case SEQ_ENC_BACK:
-            page = 0;
-            updateScreen = true;
-            break;
-        default:
-            toggleMatrixCell(seqCurrentPage - 1, markerRow, markerCol);
-            break;
+        switch (enc) {
+            case SEQ_ENC_PAGE:
+                previousPage = seqCurrentPage;
+                seqCurrentPage = seqCurrentPage >= pages ? 1 : seqCurrentPage + 1;
+                break;
+            case SEQ_ENC_LENGTH:
+                if (seqCurrentLength == pages) {
+                    seqCurrentLength = 1;
+                    return;
+                }
+                if (seqCurrentLength + seqCurrentOffset >= pages)
+                    return;
+                seqCurrentLength++;
+                break;
+            case SEQ_ENC_OFFSET:
+                if (seqCurrentOffset == pages - 1)
+                    seqCurrentOffset = 0;
+                if (seqCurrentOffset + seqCurrentLength >= pages)
+                    seqCurrentOffset = 0;
+                seqCurrentOffset++;
+                break;
+            case SEQ_ENC_RESET:
+                if (resetMode == 5)
+                    resetMode = 0;
+                else
+                    resetMode++;
+                break;
+            case SEQ_ENC_PLAY:
+                EncoderUtils::toggleParameter(isPause);
+                break;
+            case SEQ_ENC_BACK:
+                page = 0;
+                updateScreen = true;
+                break;
+            default:
+                toggleMatrixCell(seqCurrentPage - 1, markerRow, markerCol);
+                break;
         }
 
     TriggerUtils::handleStepOverflow(stepCount, cols);
 
-    if (stepCount == 0 && !isPause && updateTrigger)
-    {
-        if (seqCurrentPage <= pages)
-        {
+    if (stepCount == 0 && !isPause && updateTrigger) {
+        if (seqCurrentPage <= pages) {
             if (seqCurrentOffset + seqCurrentLength <= seqCurrentPage)
                 seqCurrentPage = seqCurrentOffset + 1;
             else
                 seqCurrentPage++;
-        }
-        else
+        } else
             seqCurrentPage = seqCurrentOffset + 1;
         previousPage = seqCurrentPage;
         stepCount = 0;
     }
 
-    if (!isPause && updateTrigger)
-    {
-        for (int i = 0; i < numChannels; i++)
-        {
+    if (!isPause && updateTrigger) {
+        for (int i = 0; i < numChannels; i++) {
             bool shouldTrigger = !BitUtils::isBitSet(seqCurrentPage - 1, i, stepCount);
             TriggerUtils::setOutput(i, shouldTrigger);
         }

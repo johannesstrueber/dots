@@ -1,15 +1,15 @@
 #ifndef RANDOM_TRIGGER_H
 #define RANDOM_TRIGGER_H
 
-#include <Arduino.h>
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
 #include "utilities/Display.h"
 #include "utilities/Encoder.h"
 #include "utilities/MenuLayout.h"
-#include "utilities/Trigger.h"
 #include "utilities/PatternMath.h"
+#include "utilities/Trigger.h"
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <Arduino.h>
+#include <Wire.h>
 
 extern bool updateScreen;
 extern bool updateTrigger;
@@ -48,45 +48,28 @@ char ranBuffer[5];
 // Track which channels are currently triggered
 bool channelTriggered[6] = {false, false, false, false, false, false};
 
-enum RanEncoderOptions
-{
-    RAN_ENC_CHANNELS = 7,
-    RAN_ENC_MODE,
-    RAN_ENC_PLAY,
-    RAN_ENC_RESET,
-    RAN_ENC_BACK
-};
+enum RanEncoderOptions { RAN_ENC_CHANNELS = 7, RAN_ENC_MODE, RAN_ENC_PLAY, RAN_ENC_RESET, RAN_ENC_BACK };
 
 extern const char *const resetOptions[];
 
-enum RanModeOptions
-{
-    RAN_MODE_ALL,
-    RAN_MODE_SEQ,
-    RAN_MODE_STEP
-};
+enum RanModeOptions { RAN_MODE_ALL, RAN_MODE_SEQ, RAN_MODE_STEP };
 
 extern const char *const ranModeOptions[];
 
 extern uint8_t randomChannelValues[6];
 extern uint8_t ranActiveChannels;
 
-void oledRan()
-{
+void oledRan() {
     DisplayUtils::initDisplay();
 
-    for (int i = 0; i < ranActiveChannels; i++)
-    {
+    for (int i = 0; i < ranActiveChannels; i++) {
         int x = 20 * i + 11;
         int y = 36 - randomChannelValues[i] * 3;
 
-        if (channelTriggered[i])
-        {
+        if (channelTriggered[i]) {
             display.fillCircle(x, y, 7, WHITE);
             display.setTextColor(BLACK, WHITE);
-        }
-        else
-        {
+        } else {
             display.drawCircle(x, y, 7, WHITE);
             display.setTextColor(WHITE, BLACK);
         }
@@ -96,8 +79,7 @@ void oledRan()
 
         if (i == enc && !encLock)
             display.drawRoundRect(x - 7, 0, 15, 44, 8, WHITE);
-        else
-        {
+        else {
             int lineEndY = y - 8;
             if (lineEndY > 0)
                 display.drawFastVLine(x, 0, lineEndY, WHITE);
@@ -116,29 +98,23 @@ void oledRan()
     display.print("S");
 
     display.setCursor(32, MenuLayout::MENU_Y_TOP);
-    display.setTextColor((enc == RAN_ENC_CHANNELS) ? BLACK : WHITE,
-                         (enc == RAN_ENC_CHANNELS) ? WHITE : BLACK);
+    display.setTextColor((enc == RAN_ENC_CHANNELS) ? BLACK : WHITE, (enc == RAN_ENC_CHANNELS) ? WHITE : BLACK);
     display.print(ranActiveChannels);
     display.print("C");
 
     strcpy_P(ranBuffer, (char *)pgm_read_word(&(ranModeOptions[ranMode])));
-    DisplayUtils::drawMenuItem(64, MenuLayout::MENU_Y_TOP,
-                               ranBuffer, enc == RAN_ENC_MODE);
-    DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_TOP,
-                                      isPause ? pauseText : playText, enc == RAN_ENC_PLAY, ranBuffer);
+    DisplayUtils::drawMenuItem(64, MenuLayout::MENU_Y_TOP, ranBuffer, enc == RAN_ENC_MODE);
+    DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_TOP, isPause ? pauseText : playText, enc == RAN_ENC_PLAY, ranBuffer);
 
     // Bottom row menu items
     DisplayUtils::drawDelayDisplay(0, MenuLayout::MENU_Y_BOTTOM, msDelay);
     DisplayUtils::drawBPMDisplay(32, MenuLayout::MENU_Y_BOTTOM, bpm, intClock, clkMode);
-    DisplayUtils::drawMenuItemFromArray(64, MenuLayout::MENU_Y_BOTTOM,
-                                        resetOptions, resetMode, enc == RAN_ENC_RESET, ranBuffer);
-    DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_BOTTOM,
-                                      backText, enc == RAN_ENC_BACK, ranBuffer);
+    DisplayUtils::drawMenuItemFromArray(64, MenuLayout::MENU_Y_BOTTOM, resetOptions, resetMode, enc == RAN_ENC_RESET, ranBuffer);
+    DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_BOTTOM, backText, enc == RAN_ENC_BACK, ranBuffer);
     display.display();
 };
 
-void randomLoop()
-{
+void randomLoop() {
     int8_t newPosition = Enc.read();
     static int8_t oldPosition = -2;
     updateScreen = false;
@@ -154,8 +130,7 @@ void randomLoop()
 
     EncoderUtils::handleEncoderBounds(enc, 0, RAN_ENC_BACK);
 
-    if (encLock)
-    {
+    if (encLock) {
         if (newPosition < oldPosition && randomChannelValues[enc] > 0)
             randomChannelValues[enc]--;
         else if (newPosition > oldPosition && randomChannelValues[enc] < 10)
@@ -164,69 +139,60 @@ void randomLoop()
     }
 
     if (buttonOn)
-        switch (enc)
-        {
-        case RAN_ENC_CHANNELS:
-            if (ranActiveChannels == 6)
-                ranActiveChannels = 1;
-            else
-                ranActiveChannels++;
-            break;
-        case RAN_ENC_MODE:
-            if (ranMode == 1)
-                ranMode = 0;
-            else
-                ranMode++;
-            break;
-        case RAN_ENC_PLAY:
-            EncoderUtils::toggleParameter(isPause);
-            break;
-        case RAN_ENC_RESET:
-            if (resetMode == 3)
-                resetMode = 0;
-            else
-                resetMode++;
-            break;
-        case RAN_ENC_BACK:
-            page = 0;
-            updateScreen = true;
-            break;
-        default:
-            EncoderUtils::toggleParameter(encLock);
-            break;
+        switch (enc) {
+            case RAN_ENC_CHANNELS:
+                if (ranActiveChannels == 6)
+                    ranActiveChannels = 1;
+                else
+                    ranActiveChannels++;
+                break;
+            case RAN_ENC_MODE:
+                if (ranMode == 1)
+                    ranMode = 0;
+                else
+                    ranMode++;
+                break;
+            case RAN_ENC_PLAY:
+                EncoderUtils::toggleParameter(isPause);
+                break;
+            case RAN_ENC_RESET:
+                if (resetMode == 3)
+                    resetMode = 0;
+                else
+                    resetMode++;
+                break;
+            case RAN_ENC_BACK:
+                page = 0;
+                updateScreen = true;
+                break;
+            default:
+                EncoderUtils::toggleParameter(encLock);
+                break;
         }
 
     oledRan();
     if (updateTrigger)
-        for (int i = 0; i < ranActiveChannels; i++)
-        {
+        for (int i = 0; i < ranActiveChannels; i++) {
             int trigger = random(0, 10) < randomChannelValues[i];
-            switch (ranMode)
-            {
-            case RAN_MODE_ALL:
-                if (trigger)
-                {
-                    TriggerUtils::setOutput(i, true);
-                    channelTriggered[i] = true;
-                }
-                else
-                {
-                    TriggerUtils::setOutput(i, false);
-                    channelTriggered[i] = false;
-                }
-                break;
-            case RAN_MODE_SEQ:
-                if (trigger && i == stepCount)
-                {
-                    TriggerUtils::setOutput(i, true);
-                    channelTriggered[i] = true;
-                }
-                else
-                {
-                    TriggerUtils::setOutput(i, false);
-                    channelTriggered[i] = false;
-                }
-                break;
+            switch (ranMode) {
+                case RAN_MODE_ALL:
+                    if (trigger) {
+                        TriggerUtils::setOutput(i, true);
+                        channelTriggered[i] = true;
+                    } else {
+                        TriggerUtils::setOutput(i, false);
+                        channelTriggered[i] = false;
+                    }
+                    break;
+                case RAN_MODE_SEQ:
+                    if (trigger && i == stepCount) {
+                        TriggerUtils::setOutput(i, true);
+                        channelTriggered[i] = true;
+                    } else {
+                        TriggerUtils::setOutput(i, false);
+                        channelTriggered[i] = false;
+                    }
+                    break;
             }
         }
 

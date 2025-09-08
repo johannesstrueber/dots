@@ -14,13 +14,7 @@ const char mainMenuOption4[] PROGMEM = "4. CLOCK DIVIDER";
 const char mainMenuOption5[] PROGMEM = "5. CONFIG";
 const char mainMenuOption6[] PROGMEM = "6. INSTRUCTIONS";
 
-const char *const mainMenuOptions[] PROGMEM = {
-    mainMenuOption1,
-    mainMenuOption2,
-    mainMenuOption3,
-    mainMenuOption4,
-    mainMenuOption5,
-    mainMenuOption6};
+const char *const mainMenuOptions[] PROGMEM = {mainMenuOption1, mainMenuOption2, mainMenuOption3, mainMenuOption4, mainMenuOption5, mainMenuOption6};
 
 // multi usage
 const char resetOption1[] PROGMEM = "RST";
@@ -30,13 +24,7 @@ const char resetOption4[] PROGMEM = "S_BCK";
 const char resetOption5[] PROGMEM = "B_RDM";
 const char resetOption6[] PROGMEM = "P_RDM";
 
-const char *const resetOptions[] PROGMEM = {
-    resetOption1,
-    resetOption2,
-    resetOption3,
-    resetOption4,
-    resetOption5,
-    resetOption6};
+const char *const resetOptions[] PROGMEM = {resetOption1, resetOption2, resetOption3, resetOption4, resetOption5, resetOption6};
 
 // config menu
 const char configMenuOption0[] PROGMEM = "CLK";
@@ -46,13 +34,8 @@ const char configMenuOption3[] PROGMEM = "BOOT";
 const char configMenuOption4[] PROGMEM = "SAVE";
 const char configMenuOption5[] PROGMEM = "BACK";
 
-const char *const configMenuOptions[] PROGMEM = {
-    configMenuOption0,
-    configMenuOption1,
-    configMenuOption2,
-    configMenuOption3,
-    configMenuOption4,
-    configMenuOption5};
+const char *const configMenuOptions[] PROGMEM = {configMenuOption0, configMenuOption1, configMenuOption2,
+                                                 configMenuOption3, configMenuOption4, configMenuOption5};
 
 const char clkOptionInt[] PROGMEM = "INT";
 const char clkOptionExt[] PROGMEM = "EXT";
@@ -65,11 +48,7 @@ const char bootOption2[] PROGMEM = "SEQ";
 const char bootOption3[] PROGMEM = "RND";
 const char bootOption4[] PROGMEM = "DIV";
 
-const char *const bootOptions[] PROGMEM = {
-    bootOption1,
-    bootOption2,
-    bootOption3,
-    bootOption4};
+const char *const bootOptions[] PROGMEM = {bootOption1, bootOption2, bootOption3, bootOption4};
 
 // sequencer
 const char playText[] PROGMEM = "PLAY";
@@ -87,12 +66,7 @@ const char divModeOption3[] PROGMEM = "PRI";
 const char divModeOption4[] PROGMEM = "FIB";
 const char divModeOption5[] PROGMEM = "O/E";
 
-const char *const divModeOptions[] PROGMEM = {
-    divModeOption1,
-    divModeOption2,
-    divModeOption3,
-    divModeOption4,
-    divModeOption5};
+const char *const divModeOptions[] PROGMEM = {divModeOption1, divModeOption2, divModeOption3, divModeOption4, divModeOption5};
 
 // random trigger
 const char ranModeOption1[] PROGMEM = "ALL";

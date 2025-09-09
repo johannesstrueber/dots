@@ -24,6 +24,20 @@ const char resetOption4[] PROGMEM = "S_BCK";
 const char resetOption5[] PROGMEM = "B_RDM";
 const char resetOption6[] PROGMEM = "P_RDM";
 
+const char stepIndexText[] PROGMEM = "S";
+const char delayIndexText[] PROGMEM = "D";
+const char bpmIndexText[] PROGMEM = "B";
+const char channelIndexText[] PROGMEM = "CH";
+const char lengthIndexText[] PROGMEM = "L";
+const char pagesIndexText[] PROGMEM = "P";
+const char slashText[] PROGMEM = "/";
+const char unselectedText[] PROGMEM = "--";
+
+const char playText[] PROGMEM = "PLAY";
+const char pauseText[] PROGMEM = "PAUSE";
+const char backText[] PROGMEM = "BACK";
+const char saveText[] PROGMEM = "SAVE";
+
 const char *const resetOptions[] PROGMEM = {resetOption1, resetOption2, resetOption3, resetOption4, resetOption5, resetOption6};
 
 // config menu
@@ -51,13 +65,14 @@ const char bootOption4[] PROGMEM = "DIV";
 const char *const bootOptions[] PROGMEM = {bootOption1, bootOption2, bootOption3, bootOption4};
 
 // sequencer
-const char playText[] PROGMEM = "PLAY";
-const char pauseText[] PROGMEM = "PAUSE";
-const char backText[] PROGMEM = "BACK";
-const char saveText[] PROGMEM = "SAVE";
-
 const char lengthText[] PROGMEM = "LEN";
 const char offsetText[] PROGMEM = "OFF";
+
+// euclidean sequencer
+const char eucHitsText[] PROGMEM = "H";
+const char eucRotationText[] PROGMEM = "R";
+const char eucMuteText[] PROGMEM = "MUTE";
+const char eucLiveText[] PROGMEM = "LIVE";
 
 // clock divider
 const char divModeOption1[] PROGMEM = "^2";

@@ -42,10 +42,11 @@ extern uint8_t ranMode;
 extern const char playText[];
 extern const char pauseText[];
 extern const char backText[];
+extern const char stepIndexText[];
+extern const char channelIndexText[];
 
 char ranBuffer[5];
 
-// Track which channels are currently triggered
 bool channelTriggered[6] = {false, false, false, false, false, false};
 
 enum RanEncoderOptions { RAN_ENC_CHANNELS = 7, RAN_ENC_MODE, RAN_ENC_PLAY, RAN_ENC_RESET, RAN_ENC_BACK };
@@ -91,24 +92,13 @@ void oledRan() {
 
     DisplayUtils::drawMenuSeparator();
 
-    // Top row menu items
-    display.setCursor(0, MenuLayout::MENU_Y_TOP);
-    display.setTextColor(WHITE, BLACK);
-    display.print(stepCount + 1);
-    display.print("S");
-
-    display.setCursor(32, MenuLayout::MENU_Y_TOP);
-    display.setTextColor((enc == RAN_ENC_CHANNELS) ? BLACK : WHITE, (enc == RAN_ENC_CHANNELS) ? WHITE : BLACK);
-    display.print(ranActiveChannels);
-    display.print("C");
-
-    strcpy_P(ranBuffer, (char *)pgm_read_word(&(ranModeOptions[ranMode])));
-    DisplayUtils::drawMenuItem(64, MenuLayout::MENU_Y_TOP, ranBuffer, enc == RAN_ENC_MODE);
+    DisplayUtils::drawNumberText(0, MenuLayout::MENU_Y_TOP, stepCount + 1, stepIndexText, false, ranBuffer);
+    DisplayUtils::drawNumberText(24, MenuLayout::MENU_Y_TOP, ranActiveChannels, channelIndexText, enc == RAN_ENC_CHANNELS, ranBuffer);
+    DisplayUtils::drawMenuItemFromArray(64, MenuLayout::MENU_Y_TOP, ranModeOptions, ranMode, enc == RAN_ENC_MODE, ranBuffer);
     DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_TOP, isPause ? pauseText : playText, enc == RAN_ENC_PLAY, ranBuffer);
 
-    // Bottom row menu items
-    DisplayUtils::drawDelayDisplay(0, MenuLayout::MENU_Y_BOTTOM, msDelay);
-    DisplayUtils::drawBPMDisplay(32, MenuLayout::MENU_Y_BOTTOM, bpm, intClock, clkMode);
+    DisplayUtils::drawDelay(0, MenuLayout::MENU_Y_BOTTOM, msDelay, ranBuffer);
+    DisplayUtils::drawBPM(32, MenuLayout::MENU_Y_BOTTOM, bpm, intClock, clkMode, ranBuffer);
     DisplayUtils::drawMenuItemFromArray(64, MenuLayout::MENU_Y_BOTTOM, resetOptions, resetMode, enc == RAN_ENC_RESET, ranBuffer);
     DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_BOTTOM, backText, enc == RAN_ENC_BACK, ranBuffer);
     display.display();

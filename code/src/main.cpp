@@ -57,15 +57,7 @@ uint8_t divMode = 0;
 uint8_t ranMode = 0;
 uint8_t ranActiveChannels = 6;
 
-enum MainPages {
-    MAIN_MENU,
-    SEQUENCER,
-    EUCLIDEAN_SEQUENCER,
-    RANDOM_TRIGGER,
-    CLOCK_DIVIDER,
-    CONFIG,
-    INSTRUCTIONS
-};
+enum MainPages { MAIN_MENU, SEQUENCER, EUCLIDEAN_SEQUENCER, RANDOM_TRIGGER, CLOCK_DIVIDER, CONFIG, INSTRUCTIONS };
 
 int8_t newPosition = 2;
 int8_t oldPosition = -2;
@@ -138,15 +130,7 @@ void setup() {
     ranMode = EEPROM.read(395);
     ranActiveChannels = EEPROM.read(396);
 
-    // load euclidean sequencer settings addresses -421
-    eucPatternLength = EEPROM.read(397);
-    for (int i = 0; i < 6; i++) {
-        int baseAddr = 398 + (i * 4);
-        eucTracks[i].steps = EEPROM.read(baseAddr);
-        eucTracks[i].hits = EEPROM.read(baseAddr + 1);
-        eucTracks[i].rotation = EEPROM.read(baseAddr + 2);
-        eucTracks[i].mute = EEPROM.read(baseAddr + 3);
-    }
+    loadEuclideanSettings();
 
     if (seqCurrentPage > pages)
         seqCurrentPage = 1;

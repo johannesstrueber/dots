@@ -61,6 +61,8 @@ extern const char backText[];
 
 extern const char lengthText[];
 extern const char offsetText[];
+extern const char pagesIndexText[];
+extern const char slashText[];
 
 extern const char *const resetOptions[];
 
@@ -122,33 +124,13 @@ void oledSeq() {
     }
     display.fillRect((stepCount + 1) * 8 - 6, 43, 4, 2, WHITE);
 
-    // Top row menu items - using page display (custom)
-    display.setCursor(0, MenuLayout::MENU_Y_TOP);
-    display.setTextColor((enc == SEQ_ENC_PAGE) ? BLACK : WHITE, (enc == SEQ_ENC_PAGE) ? WHITE : BLACK);
-    display.print(seqCurrentPage);
-    display.print("/");
-    display.print(pages);
-    display.print("P");
-
-    // Length display (custom format)
-    display.setCursor(32, MenuLayout::MENU_Y_TOP);
-    display.setTextColor((enc == SEQ_ENC_LENGTH) ? BLACK : WHITE, (enc == SEQ_ENC_LENGTH) ? WHITE : BLACK);
-    display.print(seqCurrentLength);
-    strcpy_P(seqBuffer, lengthText);
-    display.print(seqBuffer);
-
-    // Offset display (custom format)
-    display.setCursor(64, MenuLayout::MENU_Y_TOP);
-    display.setTextColor((enc == SEQ_ENC_OFFSET) ? BLACK : WHITE, (enc == SEQ_ENC_OFFSET) ? WHITE : BLACK);
-    display.print(seqCurrentOffset);
-    strcpy_P(seqBuffer, offsetText);
-    display.print(seqBuffer);
-
+    DisplayUtils::drawPages(0, MenuLayout::MENU_Y_TOP, seqCurrentPage, pages, enc == SEQ_ENC_PAGE, seqBuffer);
+    DisplayUtils::drawNumberText(32, MenuLayout::MENU_Y_TOP, seqCurrentLength, lengthText, enc == SEQ_ENC_LENGTH, seqBuffer);
+    DisplayUtils::drawNumberText(64, MenuLayout::MENU_Y_TOP, seqCurrentOffset, offsetText, enc == SEQ_ENC_OFFSET, seqBuffer);
     DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_TOP, isPause ? pauseText : playText, enc == SEQ_ENC_PLAY, seqBuffer);
 
-    // Bottom row menu items
-    DisplayUtils::drawDelayDisplay(0, MenuLayout::MENU_Y_BOTTOM, msDelay);
-    DisplayUtils::drawBPMDisplay(32, MenuLayout::MENU_Y_BOTTOM, bpm, intClock, clkMode);
+    DisplayUtils::drawDelay(0, MenuLayout::MENU_Y_BOTTOM, msDelay, seqBuffer);
+    DisplayUtils::drawBPM(32, MenuLayout::MENU_Y_BOTTOM, bpm, intClock, clkMode, seqBuffer);
     DisplayUtils::drawMenuItemFromArray(64, MenuLayout::MENU_Y_BOTTOM, resetOptions, resetMode, enc == SEQ_ENC_RESET, seqBuffer);
     DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_BOTTOM, backText, enc == SEQ_ENC_BACK, seqBuffer);
 

@@ -24,7 +24,7 @@ extern bool isPause;
 extern int8_t enc;
 extern Adafruit_SSD1306 display;
 
-enum DivEncoderOptions { DIV_ENC_PLAY, DIV_ENC_MODE, DIV_ENC_RESET, DIV_ENC_BACK };
+enum DivEncoderOptions { DIV_ENC_MODE, DIV_ENC_PLAY, DIV_ENC_RESET, DIV_ENC_BACK };
 
 extern uint8_t intClock;
 extern bool clkMode;
@@ -43,6 +43,7 @@ char divBuffer[5];
 extern const char playText[];
 extern const char pauseText[];
 extern const char backText[];
+extern const char unselectedText[];
 
 extern const char *const resetOptions[];
 
@@ -76,15 +77,13 @@ void oledClockDivider() {
 
     DisplayUtils::drawMenuSeparator();
 
-    // Top row menu items
-    DisplayUtils::drawStepCounter(0, MenuLayout::MENU_Y_TOP, stepCount);
+    DisplayUtils::drawStepCounter(0, MenuLayout::MENU_Y_TOP, stepCount, divBuffer);
     DisplayUtils::drawMenuItemFromArray(32, MenuLayout::MENU_Y_TOP, divModeOptions, divMode, enc == DIV_ENC_MODE, divBuffer);
-    DisplayUtils::drawMenuItem(64, MenuLayout::MENU_Y_TOP, "--", false);
+    DisplayUtils::drawMenuItemProgMem(64, MenuLayout::MENU_Y_TOP, unselectedText, false, divBuffer);
     DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_TOP, isPause ? pauseText : playText, enc == DIV_ENC_PLAY, divBuffer);
 
-    // Bottom row menu items
-    DisplayUtils::drawDelayDisplay(0, MenuLayout::MENU_Y_BOTTOM, msDelay);
-    DisplayUtils::drawBPMDisplay(32, MenuLayout::MENU_Y_BOTTOM, bpm, intClock, clkMode);
+    DisplayUtils::drawDelay(0, MenuLayout::MENU_Y_BOTTOM, msDelay, divBuffer);
+    DisplayUtils::drawBPM(32, MenuLayout::MENU_Y_BOTTOM, bpm, intClock, clkMode, divBuffer);
     DisplayUtils::drawMenuItemFromArray(64, MenuLayout::MENU_Y_BOTTOM, resetOptions, resetMode, enc == DIV_ENC_RESET, divBuffer);
     DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_BOTTOM, backText, enc == DIV_ENC_BACK, divBuffer);
 
@@ -119,7 +118,7 @@ void oledClockDivider() {
             display.setTextColor(WHITE, BLACK);
         }
 
-        display.setCursor(x - 3, y - 4);
+        display.setCursor(x - 2, y - 3);
         display.print(i + 1);
     }
     display.display();

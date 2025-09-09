@@ -8,25 +8,6 @@ class MenuLayout {
     // Standard positions for bottom menu items (2 rows)
     static const uint8_t MENU_Y_TOP = 48;
     static const uint8_t MENU_Y_BOTTOM = 57;
-    static const uint8_t MENU_SEPARATOR_Y = 42;
-
-    // Standard X positions for menu items (evenly spaced)
-    static const uint8_t MENU_X_COL1 = 0;
-    static const uint8_t MENU_X_COL2 = 26;
-    static const uint8_t MENU_X_COL3 = 48;
-    static const uint8_t MENU_X_COL4 = 64;
-    static const uint8_t MENU_X_COL5 = 96;
-
-    // Alternative spacing for 6 items
-    static const uint8_t MENU_X_TIGHT_COL1 = 2;
-    static const uint8_t MENU_X_TIGHT_COL2 = 25;
-    static const uint8_t MENU_X_TIGHT_COL3 = 42;
-    static const uint8_t MENU_X_TIGHT_COL4 = 60;
-    static const uint8_t MENU_X_TIGHT_COL5 = 80;
-    static const uint8_t MENU_X_TIGHT_COL6 = 105;
-
-    // Common menu item widths
-    static const uint8_t MENU_ITEM_WIDTH = 20;
 
     // Channel grid layout (for channel selectors)
     static const uint8_t CHANNEL_GRID_COLS = 3;

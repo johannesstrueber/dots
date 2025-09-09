@@ -39,8 +39,8 @@ extern uint8_t divMode;
 extern uint8_t ranMode;
 extern uint8_t ranActiveChannels;
 
-extern EuclideanTrack eucTracks[6];
-extern uint8_t eucPatternLength;
+void saveEuclideanSettings();
+void loadEuclideanSettings();
 
 extern const uint8_t seqMatrixSize;
 extern byte seqMatrix[seqMatrixSize];
@@ -134,14 +134,8 @@ void configMenuLoop() {
                 EEPROM.write(395, ranMode);
                 EEPROM.write(396, ranActiveChannels);
 
-                EEPROM.write(397, eucPatternLength);
-                for (int i = 0; i < 6; i++) {
-                    int baseAddr = 398 + (i * 4);
-                    EEPROM.write(baseAddr, eucTracks[i].steps);
-                    EEPROM.write(baseAddr + 1, eucTracks[i].hits);
-                    EEPROM.write(baseAddr + 2, eucTracks[i].rotation);
-                    EEPROM.write(baseAddr + 3, eucTracks[i].mute);
-                }
+                // Save Euclidean sequencer settings
+                saveEuclideanSettings();
                 break;
             case BACK:
                 updateScreen = true;

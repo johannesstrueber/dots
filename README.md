@@ -1,6 +1,6 @@
 ## Overview
 
-DOTS is a compact, 6-channel Eurorack module designed for generating triggers and gates. This open hardware project allows you to build the module yourself, with instructions and resources provided. Please visit the [website](http://www.d-o-t-s.net) for more info
+DOTS is a compact, 6-channel Eurorack module designed for generating triggers and gates. This open hardware project allows you to build the module yourself, with instructions and resources provided. Please visit the [website](http://www.d-o-t-s.net) for more info.
 <p align="left">
   <img src="/gh-images/frontside.jpg" alt="frontside" width="210"/>
   <img src="/gh-images/backside.jpg" alt="backside" width="210"/>
@@ -8,6 +8,8 @@ DOTS is a compact, 6-channel Eurorack module designed for generating triggers an
 </p>
 
 ## Features
+
+Watch a quick demo video [here](https://www.youtube.com/watch?v=c7fAQ9qpfXI).
 
 - **6-Channel Trigger/Gate**: Generate triggers and gates for your modular system.
 - **Compact Size**: Only 6hp wide, making it a handy addition to your setup.
@@ -38,7 +40,7 @@ Check the [website](http://www.d-o-t-s.net) for detailed instructions on how to 
 - **/kicad_main**: Main PCB design files ([KiCad](https://kicad.org))
 - **diagram.json**: Hardware simulation ([WOKWI](https://wokwi.com))
 - **platformio.ini**: Build configuration ([PlatformIO](https://platformio.org))
-- **flash_sequencer.sh**: Automated flashing script with EEPROM configuration
+- **flash_module.sh**: Automated flashing script with EEPROM configuration
 
 ## Disclaimer
 
@@ -51,7 +53,6 @@ If you have any questions, feel free to contact the creator. This is a hobby pro
 Special thanks to HAGIWO for providing foundational knowledge.
 
 Happy Building!
-
 
 [cc-by-nc-sa]: http://creativecommons.org/licenses/by-nc-sa/4.0/
 [cc-by-nc-sa-shield]: https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg

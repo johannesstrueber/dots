@@ -1,10 +1,10 @@
 ## Overview
 
 DOTS is a compact, 6-channel Eurorack module designed for generating triggers and gates. This open hardware project allows you to build the module yourself, with instructions and resources provided. Please visit the [website](http://www.d-o-t-s.net) for more info
-<p align="left" style="background-color: "#9c52f2">
-  <img src="/gh-images/frontside.jpg" alt="Image 1" width="210"/>
-  <img src="/gh-images/backside.jpg" alt="Image 2" width="210"/>
-  <img src="/gh-images/pcb.jpg" alt="Image 2" width="210"/>
+<p align="left">
+  <img src="/gh-images/frontside.jpg" alt="frontside" width="210"/>
+  <img src="/gh-images/backside.jpg" alt="backside" width="210"/>
+  <img src="/gh-images/pcb.jpg" alt="pcb" width="210"/>
 </p>
 
 ## Features
@@ -31,12 +31,14 @@ Check the [website](http://www.d-o-t-s.net) for detailed instructions on how to 
 
 ## Structure
 
-- **/code**: Firmware source code.
-- **/kicad_frontpanel**: [KiCad](https://kicad.org) files for the front panel.
-- **/kicad_pcb**: [KiCad](https://kicad.org) files for the PCB.
-- **diagram.json**: [WOKWI](https://wokwi.com) diagram file.
-- **wokwi.html**: [WOKWI](https://wokwi.com) simulation file.
-- **platformio.ini**: [PlatformIO](https://platformio.org) configuration file.
+- **/code/include**: Header files and module implementations
+- **/code/src/main.cpp**: Main firmware entry point
+- **/code/src/eeprom_config.cpp**: Default settings and pattern configuration
+- **/kicad_frontpanel**: Front panel PCB design files ([KiCad](https://kicad.org))
+- **/kicad_main**: Main PCB design files ([KiCad](https://kicad.org))
+- **diagram.json**: Hardware simulation ([WOKWI](https://wokwi.com))
+- **platformio.ini**: Build configuration ([PlatformIO](https://platformio.org))
+- **flash_sequencer.sh**: Automated flashing script with EEPROM configuration
 
 ## Disclaimer
 

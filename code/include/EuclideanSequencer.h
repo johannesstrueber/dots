@@ -269,7 +269,7 @@ void euclideanLoop() {
             switch (enc) {
                 case EUC_ENC_STEPS:
                     eucTracks[eucCurrentTrack].steps++;
-                    if (eucTracks[eucCurrentTrack].steps > 12)
+                    if (eucTracks[eucCurrentTrack].steps > 16)
                         eucTracks[eucCurrentTrack].steps = 1;
                     if (eucTracks[eucCurrentTrack].hits > eucTracks[eucCurrentTrack].steps) {
                         eucTracks[eucCurrentTrack].hits = eucTracks[eucCurrentTrack].steps;
@@ -303,7 +303,7 @@ void euclideanLoop() {
 
                 case EUC_ENC_LENGTH:
                     eucPatternLength++;
-                    if (eucPatternLength > 12)
+                    if (eucPatternLength > 16)
                         eucPatternLength = 4;
                     needsDisplayUpdate = true;
                     break;

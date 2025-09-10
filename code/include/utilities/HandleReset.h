@@ -18,7 +18,6 @@ extern uint8_t seqCurrentOffset;
 extern uint8_t page;
 
 void handleReset() {
-
     if (page != 1 && resetMode > 3)
         resetMode = 0;
     if (!oldResetIn && resetIn && !isPause)

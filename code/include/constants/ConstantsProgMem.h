@@ -7,8 +7,8 @@
 // main menu
 const char headerText[] PROGMEM = "SELECT MODE";
 
-const char mainMenuOption1[] PROGMEM = "1. SEQUENCER";
-const char mainMenuOption2[] PROGMEM = "2. EUCLIDEAN";
+const char mainMenuOption1[] PROGMEM = "1. STEP SEQ";
+const char mainMenuOption2[] PROGMEM = "2. EUCLIDEAN SEQ";
 const char mainMenuOption3[] PROGMEM = "3. RANDOM TRIGGER";
 const char mainMenuOption4[] PROGMEM = "4. CLOCK DIVIDER";
 const char mainMenuOption5[] PROGMEM = "5. CONFIG";
@@ -48,8 +48,7 @@ const char configMenuOption3[] PROGMEM = "BOOT";
 const char configMenuOption4[] PROGMEM = "SAVE";
 const char configMenuOption5[] PROGMEM = "BACK";
 
-const char *const configMenuOptions[] PROGMEM = {configMenuOption0, configMenuOption1, configMenuOption2,
-                                                 configMenuOption3, configMenuOption4, configMenuOption5};
+const char *const configMenuOptions[] PROGMEM = {configMenuOption0, configMenuOption1, configMenuOption2, configMenuOption3, configMenuOption4, configMenuOption5};
 
 const char clkOptionInt[] PROGMEM = "INT";
 const char clkOptionExt[] PROGMEM = "EXT";
@@ -64,7 +63,7 @@ const char bootOption4[] PROGMEM = "DIV";
 
 const char *const bootOptions[] PROGMEM = {bootOption1, bootOption2, bootOption3, bootOption4};
 
-// sequencer
+// step sequencer
 const char lengthText[] PROGMEM = "LEN";
 const char offsetText[] PROGMEM = "OFF";
 
@@ -73,15 +72,6 @@ const char eucHitsText[] PROGMEM = "H";
 const char eucRotationText[] PROGMEM = "R";
 const char eucMuteText[] PROGMEM = "MUTE";
 const char eucLiveText[] PROGMEM = "LIVE";
-
-// clock divider
-const char divModeOption1[] PROGMEM = "^2";
-const char divModeOption2[] PROGMEM = "!^2";
-const char divModeOption3[] PROGMEM = "PRI";
-const char divModeOption4[] PROGMEM = "FIB";
-const char divModeOption5[] PROGMEM = "O/E";
-
-const char *const divModeOptions[] PROGMEM = {divModeOption1, divModeOption2, divModeOption3, divModeOption4, divModeOption5};
 
 // random trigger
 const char ranModeOption1[] PROGMEM = "ALL";

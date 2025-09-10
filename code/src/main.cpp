@@ -84,7 +84,7 @@ unsigned long lastInternalClockStep = 0;
 #include "Instructions.h"
 #include "MainMenu.h"
 #include "RandomTrigger.h"
-#include "Sequencer.h"
+#include "StepSequencer.h"
 #include "utilities/HandleReset.h"
 
 void setup() {
@@ -106,7 +106,7 @@ void setup() {
     outMode = EEPROM.read(393);
     resetMode = EEPROM.read(387);
 
-    // sequencer
+    // step sequencer
     for (int pa = 0; pa < pages; pa++)
         for (int ro = 0; ro < rows; ro++)
             for (int co = 0; co < cols; co++) {
@@ -126,11 +126,12 @@ void setup() {
     // clock divider
     divMode = EEPROM.read(394);
 
-    // ran trigger
+    // random trigger
     ranMode = EEPROM.read(395);
     ranActiveChannels = EEPROM.read(396);
 
     loadEuclideanSettings();
+    loadChannelDividers(); // Load individual channel divider values
 
     if (seqCurrentPage > pages)
         seqCurrentPage = 1;
@@ -144,13 +145,14 @@ void setup() {
         intClock = 80;
     if (bootMode > 3)
         bootMode = 0;
-    if (divMode > 4)
+    if (divMode > 5) // Updated for new INDIVIDUAL mode (0-5 = 6 modes total)
         divMode = 0;
     if (ranMode > 1)
         ranMode = 0;
     if (ranActiveChannels > 6)
         ranActiveChannels = 6;
 
+    // euclidean sequencer
     if (eucPatternLength < 1 || eucPatternLength > 32)
         eucPatternLength = 16;
 

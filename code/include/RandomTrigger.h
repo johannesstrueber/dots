@@ -107,6 +107,7 @@ void oledRan() {
 void randomLoop() {
     int8_t newPosition = Enc.read();
     static int8_t oldPosition = -2;
+    static int8_t oldEnc = 0;
     updateScreen = false;
 
     if (msDelay < 0)
@@ -119,6 +120,16 @@ void randomLoop() {
         stepCount = 0;
 
     EncoderUtils::handleEncoderBounds(enc, 0, RAN_ENC_BACK);
+
+    if (enc >= ranActiveChannels && enc < RAN_ENC_CHANNELS) {
+        if (enc > oldEnc) {
+            enc = RAN_ENC_CHANNELS;
+        } else {
+            enc = ranActiveChannels - 1;
+        }
+    }
+
+    oldEnc = enc;
 
     if (encLock) {
         if (newPosition < oldPosition && randomChannelValues[enc] > 0)

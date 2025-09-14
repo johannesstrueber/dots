@@ -251,6 +251,7 @@ void loadEuclideanSettings() {
 void euclideanLoop() {
     bool needsDisplayUpdate = false;
     int8_t oldEnc = enc;
+    isPause = false;
 
     EncoderUtils::handleEncoderBounds(enc, EUC_ENC_CHANNEL_1, EUC_ENC_BACK);
 
@@ -332,7 +333,7 @@ void euclideanLoop() {
         eucCurrentStep = stepCount;
     }
 
-    if (!isPause && updateTrigger) {
+    if (updateTrigger) {
         for (int i = 0; i < numChannels; i++) {
             bool shouldTrigger = !eucTracks[i].mute && isEuclideanStepActive(i, eucCurrentStep);
 

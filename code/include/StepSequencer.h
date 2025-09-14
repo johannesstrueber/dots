@@ -163,20 +163,22 @@ void sequencerLoop() {
                 seqCurrentPage = seqCurrentPage >= pages ? 1 : seqCurrentPage + 1;
                 break;
             case SEQ_ENC_LENGTH:
-                if (seqCurrentLength == pages) {
-                    seqCurrentLength = 1;
-                    return;
-                }
-                if (seqCurrentLength + seqCurrentOffset >= pages)
-                    return;
                 seqCurrentLength++;
+                if (seqCurrentLength > pages) {
+                    seqCurrentLength = 1;
+                }
+                if (seqCurrentLength + seqCurrentOffset > pages) {
+                    seqCurrentOffset = pages - seqCurrentLength;
+                }
                 break;
             case SEQ_ENC_OFFSET:
-                if (seqCurrentOffset == pages - 1)
-                    seqCurrentOffset = 0;
-                if (seqCurrentOffset + seqCurrentLength >= pages)
-                    seqCurrentOffset = 0;
                 seqCurrentOffset++;
+                if (seqCurrentOffset >= pages) {
+                    seqCurrentOffset = 0;
+                }
+                if (seqCurrentLength + seqCurrentOffset > pages) {
+                    seqCurrentLength = pages - seqCurrentOffset;
+                }
                 break;
             case SEQ_ENC_RESET:
                 if (resetMode == 5)

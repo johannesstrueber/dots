@@ -31,7 +31,39 @@ Check the [website](http://www.d-o-t-s.net) for detailed instructions on how to 
 - **[Firmware on GitHub](https://www.github.com/releases)**: Download the latest firmware for the module.
 - **[Modulargrid.net](https://modulargrid.net/e/other-unknown-dots)**: Module page on Modulargrid.net.
 
-## Structure
+## Technical Specifications
+
+- **Width**: 6HP
+- **Depth**: ~30mm
+- **Clock Input**: 0-5V triggers/gates
+- **Reset Input**: 0-5V triggers/gates  
+- **Outputs**: 6x 0-5V triggers/gates
+- **Display**: 128x64 OLED
+- **Microcontroller**: ATmega328P
+- **Memory**: EEPROM storage for patterns and settings
+
+### Modes
+
+- **Step Sequencer**: Classic 16-step pattern programming with 8 pattern banks and visual step editing
+- **Euclidean Sequencer**: Generate complex polyrhythmic patterns using Euclidean algorithms with individual channel control
+- **Clock Divider**: Individual channel dividers (÷1 to ÷16) for creating polyrhythmic sequences and musical divisions
+- **Random Trigger**: Probability-based trigger generation with adjustable chance per channel
+- **Configuration Menu**: Comprehensive settings for BPM, clock modes, output types, and more
+
+## Development
+
+### Building from Source
+
+1. **Prerequisites**: Install [PlatformIO](https://platformio.org) and [Git](https://git-scm.com)
+2. **Clone**: `git clone https://github.com/johannesstrueber/dots.git`
+3. **Build**: `platformio run`
+4. **Flash**: Use `./flash_sequencer.sh` for automated flashing with default patterns
+
+### Editing EEPROM Configuration
+
+eeprom_config.cpp contains default settings and pattern configurations. Modify this file to customize the initial state of your module.
+
+## Repository Structure
 
 - **/code/include**: Header files and module implementations
 - **/code/src/main.cpp**: Main firmware entry point

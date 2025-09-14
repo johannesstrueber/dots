@@ -1,4 +1,4 @@
 [wokwi]
-version = 1
+version = 1.1
 firmware = ".pio/build/program_via_AVRISPmkII/firmware.hex"
 elf = ".pio/build/program_via_AVRISPmkII/firmware.elf"

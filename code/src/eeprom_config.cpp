@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 
-// EEPROM Address Map (matching your main program)
+// EEPROM Address Map
 // 0-383: Matrix patterns (16 patterns * 24 bytes each)
 // 384-396: Settings (13 bytes)
 // 397-421: Euclidean settings (25 bytes)

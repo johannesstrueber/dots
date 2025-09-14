@@ -131,7 +131,7 @@ void setup() {
     ranActiveChannels = EEPROM.read(396);
 
     loadEuclideanSettings();
-    loadChannelDividers(); // Load individual channel divider values
+    loadChannelDividers();
 
     if (seqCurrentPage > pages)
         seqCurrentPage = 1;
@@ -145,7 +145,7 @@ void setup() {
         intClock = 80;
     if (bootMode > 3)
         bootMode = 0;
-    if (divMode > 5) // Updated for new INDIVIDUAL mode (0-5 = 6 modes total)
+    if (divMode > 5)
         divMode = 0;
     if (ranMode > 1)
         ranMode = 0;

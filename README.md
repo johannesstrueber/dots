@@ -1,37 +1,90 @@
-# DOTS: A 6-Channel Eurorack Trigger/Gate Module
-
 ## Overview
-DOTS is a compact, 6-channel Eurorack module designed for generating triggers and gates. This open hardware project allows you to build the module yourself, with instructions and resources provided. Please visit the [website](http://www.d-o-t-s.net) for more info
-<p align="left" style="background-color: "#9c52f2">
-  <img src="/gh-images/frontside.jpg" alt="Image 1" width="210"/>
-  <img src="/gh-images/backside.jpg" alt="Image 2" width="210"/>
-  <img src="/gh-images/pcb.jpg" alt="Image 2" width="210"/>
+
+DOTS is a compact, 6-channel Eurorack module designed for generating triggers and gates. This open hardware project allows you to build the module yourself, with instructions and resources provided. Please visit the [website](http://www.d-o-t-s.net) for more info.
+<p align="left">
+  <img src="/gh-images/frontside.jpg" alt="frontside" width="210"/>
+  <img src="/gh-images/backside.jpg" alt="backside" width="210"/>
+  <img src="/gh-images/pcb.jpg" alt="pcb" width="210"/>
 </p>
 
 ## Features
+
+Watch a quick demo video [here](https://www.youtube.com/watch?v=c7fAQ9qpfXI).
+
 - **6-Channel Trigger/Gate**: Generate triggers and gates for your modular system.
 - **Compact Size**: Only 6hp wide, making it a handy addition to your setup.
 - **Sync Capabilities**: Includes a clock and reset input, allowing it to function as a master or slave.
 - **Visual Feedback**: Equipped with a screen and an UI.
-- **Interactive Build Guide**: Use the iBOM for an interactive Bill of Materials.
+- **Multiple Programs**: The firmware features multiple programs for different trigger/gate patterns and functionalities.
 
 ## Instructions
-Check the website for detailed instructions on how to build the module. Down below, you can find a brief overview of the process.
+
+Check the [website](http://www.d-o-t-s.net) for detailed instructions on how to order, build and flash the module.
 
 ## Resources
+
+- **[Website](http://www.d-o-t-s.net)**: Main website for the project.
 - **[Order Guide](http://www.d-o-t-s.net/order)**: Order your DOTS PCB and front panel.
 - **[Build Guide](http://www.d-o-t-s.net/build)**: Detailed instructions and an interactive Bill of Materials.
 - **[Installation Guide](http://www.d-o-t-s.net/installation)**: Instructions for flashing the firmware to your DOTS module.
 - **[Manual](http://www.d-o-t-s.net/manual)**: Comprehensive manual for using the module.
-- **[Source Files on GitHub](https://www.github.com/releases)**: Access the source files for the project.
-- **[Demo Video](https://www.youtube-nocookie.com/embed/HCOv5BAQKyc)**: Watch the demonstration video.
+- **[Firmware on GitHub](https://www.github.com/releases)**: Download the latest firmware for the module.
+- **[Modulargrid.net](https://modulargrid.net/e/other-unknown-dots)**: Module page on Modulargrid.net.
 
+## Technical Specifications
+
+- **Width**: 6HP
+- **Depth**: ~30mm
+- **Clock Input**: 0-5V triggers/gates
+- **Reset Input**: 0-5V triggers/gates  
+- **Outputs**: 6x 0-5V triggers/gates
+- **Display**: 128x64 OLED
+- **Microcontroller**: ATmega328P
+- **Memory**: EEPROM storage for patterns and settings
+
+### Modes
+
+- **Step Sequencer**: Classic 16-step pattern programming with 8 pattern banks and visual step editing
+- **Euclidean Sequencer**: Generate complex polyrhythmic patterns using Euclidean algorithms with individual channel control
+- **Clock Divider**: Individual channel dividers (÷1 to ÷16) for creating polyrhythmic sequences and musical divisions
+- **Random Trigger**: Probability-based trigger generation with adjustable chance per channel
+- **Configuration Menu**: Comprehensive settings for BPM, clock modes, output types, and more
+
+## Development
+
+### Building from Source
+
+1. **Prerequisites**: Install [PlatformIO](https://platformio.org) and [Git](https://git-scm.com)
+2. **Clone**: `git clone https://github.com/johannesstrueber/dots.git`
+3. **Build**: `platformio run`
+4. **Flash**: Use `./flash_sequencer.sh` for automated flashing with default patterns
+
+### Editing EEPROM Configuration
+
+eeprom_config.cpp contains default settings and pattern configurations. Modify this file to customize the initial state of your module.
+
+## Repository Structure
+
+- **/code/include**: Header files and module implementations
+- **/code/src/main.cpp**: Main firmware entry point
+- **/code/src/eeprom_config.cpp**: Default settings and pattern configuration
+- **/kicad_frontpanel**: Front panel PCB design files ([KiCad](https://kicad.org))
+- **/kicad_main**: Main PCB design files ([KiCad](https://kicad.org))
+- **diagram.json**: Hardware simulation ([WOKWI](https://wokwi.com))
+- **platformio.ini**: Build configuration ([PlatformIO](https://platformio.org))
+- **flash_module.sh**: Automated flashing script with EEPROM configuration
 
 ## Disclaimer
-This is a personal project and not a commercial product. The creator is not liable for any damage caused by the module. Use at your own risk. The project is licensed under the CC BY-NC-SA 4.0 license.
+
+This is a personal project and not a commercial product. The creator is not liable for any damage caused by the module. Use at your own risk. The project is licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License][cc-by-nc-sa].
+
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
 
 If you have any questions, feel free to contact the creator. This is a hobby project, and the creator is a web developer, not a professional hardware embedded systems builder; some hardware design or code decisions may seem unconventional.
 
 Special thanks to HAGIWO for providing foundational knowledge.
 
 Happy Building!
+
+[cc-by-nc-sa]: http://creativecommons.org/licenses/by-nc-sa/4.0/
+[cc-by-nc-sa-shield]: https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg

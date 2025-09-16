@@ -1,12 +1,15 @@
 #ifndef CONFIG_MENU_H
 #define CONFIG_MENU_H
 
-#include <EEPROM.h>
-#include <Arduino.h>
-#include <Encoder.h>
-#include <Wire.h>
+#include "utilities/Display.h"
+#include "utilities/Encoder.h"
+#include "utilities/MenuLayout.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <Arduino.h>
+#include <EEPROM.h>
+#include <Encoder.h>
+#include <Wire.h>
 
 extern Encoder Enc;
 extern int8_t enc;
@@ -14,15 +17,7 @@ extern int8_t enc;
 extern Adafruit_SSD1306 display;
 int8_t configMenuOptionCount = 6;
 
-enum ConfigOptions
-{
-    CLK,
-    BPM,
-    OUT,
-    BOOT,
-    SAVE,
-    BACK
-};
+enum ConfigOptions { CLK, BPM, OUT, BOOT, SAVE, BACK };
 
 extern const char clkOptionInt[];
 extern const char clkOptionExt[];
@@ -40,9 +35,14 @@ extern uint8_t intClock;
 extern uint8_t bpm;
 
 extern bool encLock;
-extern uint8_t divMode;
 extern uint8_t ranMode;
 extern uint8_t ranActiveChannels;
+
+void saveEuclideanSettings();
+void loadEuclideanSettings();
+void saveStepSequencerSettings();
+void saveRandomTriggerSettings();
+void saveChannelDividers();
 
 extern const uint8_t seqMatrixSize;
 extern byte seqMatrix[seqMatrixSize];
@@ -56,20 +56,15 @@ extern bool isPause;
 extern bool updateScreen;
 extern bool buttonOn;
 
-void oledConfigMenu()
-{
-    display.clearDisplay();
-    for (int i = 0; i < configMenuOptionCount; i++)
-    {
-        display.setCursor(0, i * 9);
-        char configBuffer[5];
-
-        display.setTextColor((enc == i) ? BLACK : WHITE, (enc == i) ? WHITE : BLACK);
-        strcpy_P(configBuffer, (char *)pgm_read_word(&(configMenuOptions[i])));
-        display.print(configBuffer);
-    }
+void oledConfigMenu() {
+    DisplayUtils::initDisplay();
     char configBuffer[5];
-    display.setTextColor(WHITE);
+
+    for (int i = 0; i < configMenuOptionCount; i++) {
+        DisplayUtils::drawMenuItemFromArray(0, i * 9, configMenuOptions, i, enc == i, configBuffer);
+    }
+
+    display.setTextColor(WHITE, BLACK);
     display.setCursor(64, 0);
     strcpy_P(configBuffer, clkMode ? clkOptionInt : clkOptionExt);
     display.print(configBuffer);
@@ -88,13 +83,11 @@ void oledConfigMenu()
     display.display();
 }
 
-void configMenuLoop()
-{
+void configMenuLoop() {
     int8_t newPosition = Enc.read();
     static int8_t oldPosition = -2;
 
-    if (encLock)
-    {
+    if (encLock) {
         if (newPosition < oldPosition)
             intClock--;
         else if (newPosition > oldPosition)
@@ -108,55 +101,44 @@ void configMenuLoop()
     else if (intClock < 10)
         intClock = 10;
 
-    if (enc > configMenuOptionCount)
-        enc = 0;
-
-    else if (enc < 0)
-        enc = configMenuOptionCount - 1;
+    EncoderUtils::handleEncoderBounds(enc, 0, configMenuOptionCount - 1);
 
     if (buttonOn)
-        switch (enc)
-        {
-        case CLK:
-            clkMode = !clkMode;
-            break;
-        case BPM:
-            encLock = !encLock;
-            enc = 1;
-            break;
-        case OUT:
-            outMode = !outMode;
-            break;
-        case BOOT:
-            bootMode++;
-            if (bootMode > 3)
-                bootMode = 0;
-            break;
-        case SAVE:
-            for (int i = 0; i < seqMatrixSize; i++)
-            {
-                byte EEPROMbyte = seqMatrix[i];
-                EEPROM.write(i, EEPROMbyte);
-            }
-            EEPROM.write(384, seqCurrentPage);
-            EEPROM.write(385, seqCurrentLength);
-            EEPROM.write(386, seqCurrentOffset);
-            EEPROM.write(387, resetMode);
-            EEPROM.write(388, isPause);
-            EEPROM.write(390, clkMode);
-            EEPROM.write(391, intClock);
-            EEPROM.write(392, bootMode);
-            EEPROM.write(393, outMode);
-            EEPROM.write(394, divMode);
-            EEPROM.write(395, ranMode);
-            EEPROM.write(396, ranActiveChannels);
-            break;
-        case BACK:
-            updateScreen = true;
-            page = 0;
-            break;
-        default:
-            break;
+        switch (enc) {
+            case CLK:
+                EncoderUtils::toggleParameter(clkMode);
+                break;
+            case BPM:
+                EncoderUtils::toggleParameter(encLock);
+                enc = 1;
+                break;
+            case OUT:
+                EncoderUtils::toggleParameter(outMode);
+                break;
+            case BOOT:
+                EncoderUtils::cycleEnum(bootMode, 4);
+                break;
+            case SAVE:
+                // config settings
+                EEPROM.write(387, resetMode);
+                EEPROM.write(388, isPause);
+                EEPROM.write(390, clkMode);
+                EEPROM.write(391, intClock);
+                EEPROM.write(392, bootMode);
+                EEPROM.write(393, outMode);
+
+                // program settings
+                saveStepSequencerSettings();
+                saveRandomTriggerSettings();
+                saveEuclideanSettings();
+                saveChannelDividers();
+                break;
+            case BACK:
+                updateScreen = true;
+                page = 0;
+                break;
+            default:
+                break;
         }
 
     if (updateScreen)

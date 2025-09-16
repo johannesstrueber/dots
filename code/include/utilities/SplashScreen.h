@@ -1,17 +1,16 @@
 #ifndef SPLASHSCREEN_H
 #define SPLASHSCREEN_H
 
-#include <avr/pgmspace.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <avr/pgmspace.h>
 
 extern Adafruit_SSD1306 display;
 
-const char splashScreenText[] PROGMEM = "DOTS 1.0";
+const char splashScreenText[] PROGMEM = "DOTS 1.1";
 char splashScreenTextBuffer[9];
 
-void splashScreen()
-{
+void splashScreen() {
     display.clearDisplay();
     display.setTextSize(1);
     display.setTextColor(WHITE);

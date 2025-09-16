@@ -48,6 +48,9 @@ extern const char eucRotationText[];
 extern const char eucMuteText[];
 extern const char eucLiveText[];
 
+extern const char *const resetOptions[];
+extern uint8_t resetMode;
+
 char eucBuffer[5];
 
 EuclideanTrack eucTracks[6] = {{16, 4, 0, false, 0}, {16, 3, 0, false, 0}, {12, 5, 0, false, 0}, {8, 3, 0, false, 0}, {16, 7, 0, false, 0}, {16, 2, 0, false, 0}};
@@ -270,7 +273,7 @@ void euclideanLoop() {
             switch (enc) {
                 case EUC_ENC_STEPS:
                     eucTracks[eucCurrentTrack].steps++;
-                    if (eucTracks[eucCurrentTrack].steps > 16)
+                    if (eucTracks[eucCurrentTrack].steps > eucPatternLength)
                         eucTracks[eucCurrentTrack].steps = 1;
                     if (eucTracks[eucCurrentTrack].hits > eucTracks[eucCurrentTrack].steps) {
                         eucTracks[eucCurrentTrack].hits = eucTracks[eucCurrentTrack].steps;
@@ -302,27 +305,48 @@ void euclideanLoop() {
                     needsDisplayUpdate = true;
                     break;
 
-                case EUC_ENC_LENGTH:
+                case EUC_ENC_LENGTH: {
                     eucPatternLength++;
                     if (eucPatternLength > 16)
                         eucPatternLength = 4;
+
+                    bool anyTrackAdjusted = false;
+                    for (int i = 0; i < 6; i++) {
+                        if (eucTracks[i].steps > eucPatternLength) {
+                            eucTracks[i].steps = eucPatternLength;
+                            if (eucTracks[i].hits > eucTracks[i].steps) {
+                                eucTracks[i].hits = eucTracks[i].steps;
+                            }
+                            anyTrackAdjusted = true;
+                        }
+                    }
+
+                    if (anyTrackAdjusted) {
+                        for (int i = 0; i < 6; i++) {
+                            uint32_t basePattern = PatternMath::generateEuclideanPattern(eucTracks[i].steps, eucTracks[i].hits);
+                            eucTracks[i].pattern = PatternMath::rotatePattern(basePattern, eucTracks[i].steps, eucTracks[i].rotation);
+                        }
+                    }
+
                     needsDisplayUpdate = true;
                     break;
+                }
 
                 case EUC_ENC_RESET:
-                    EncoderUtils::cycleEnum(resetMode, 2);
+                    EncoderUtils::cycleEnum(resetMode, 3);
                     needsDisplayUpdate = true;
                     break;
 
                 case EUC_ENC_BACK:
                     page = 0;
                     updateScreen = true;
-                    return;
+                    break;
             }
         }
 
         if (needsPatternUpdate) {
-            eucTracks[eucCurrentTrack].pattern = PatternMath::generateEuclideanPattern(eucTracks[eucCurrentTrack].steps, eucTracks[eucCurrentTrack].hits);
+            uint32_t basePattern = PatternMath::generateEuclideanPattern(eucTracks[eucCurrentTrack].steps, eucTracks[eucCurrentTrack].hits);
+            eucTracks[eucCurrentTrack].pattern = PatternMath::rotatePattern(basePattern, eucTracks[eucCurrentTrack].steps, eucTracks[eucCurrentTrack].rotation);
         }
     }
 
@@ -330,12 +354,13 @@ void euclideanLoop() {
     if (stepCount == 0) {
         eucCurrentStep = 0;
     } else {
-        eucCurrentStep = stepCount;
+        eucCurrentStep = stepCount % eucPatternLength;
     }
 
     if (updateTrigger) {
         for (int i = 0; i < numChannels; i++) {
-            bool shouldTrigger = !eucTracks[i].mute && isEuclideanStepActive(i, eucCurrentStep);
+            uint8_t trackStep = eucCurrentStep % eucTracks[i].steps;
+            bool shouldTrigger = !eucTracks[i].mute && isEuclideanStepActive(i, trackStep);
 
             TriggerUtils::setOutput(i, shouldTrigger);
         }

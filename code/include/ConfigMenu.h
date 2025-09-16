@@ -35,12 +35,14 @@ extern uint8_t intClock;
 extern uint8_t bpm;
 
 extern bool encLock;
-extern uint8_t divMode;
 extern uint8_t ranMode;
 extern uint8_t ranActiveChannels;
 
 void saveEuclideanSettings();
 void loadEuclideanSettings();
+void saveStepSequencerSettings();
+void saveRandomTriggerSettings();
+void saveChannelDividers();
 
 extern const uint8_t seqMatrixSize;
 extern byte seqMatrix[seqMatrixSize];
@@ -114,28 +116,22 @@ void configMenuLoop() {
                 EncoderUtils::toggleParameter(outMode);
                 break;
             case BOOT:
-                EncoderUtils::cycleEnum(bootMode, 3);
+                EncoderUtils::cycleEnum(bootMode, 4);
                 break;
             case SAVE:
-                for (int i = 0; i < seqMatrixSize; i++) {
-                    byte EEPROMbyte = seqMatrix[i];
-                    EEPROM.write(i, EEPROMbyte);
-                }
-                EEPROM.write(384, seqCurrentPage);
-                EEPROM.write(385, seqCurrentLength);
-                EEPROM.write(386, seqCurrentOffset);
+                // config settings
                 EEPROM.write(387, resetMode);
                 EEPROM.write(388, isPause);
                 EEPROM.write(390, clkMode);
                 EEPROM.write(391, intClock);
                 EEPROM.write(392, bootMode);
                 EEPROM.write(393, outMode);
-                EEPROM.write(394, divMode);
-                EEPROM.write(395, ranMode);
-                EEPROM.write(396, ranActiveChannels);
 
-                // Save Euclidean sequencer settings
+                // program settings
+                saveStepSequencerSettings();
+                saveRandomTriggerSettings();
                 saveEuclideanSettings();
+                saveChannelDividers();
                 break;
             case BACK:
                 updateScreen = true;

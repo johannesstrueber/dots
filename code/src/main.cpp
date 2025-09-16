@@ -53,7 +53,6 @@ uint8_t stepCount = 0;
 
 Adafruit_SSD1306 display(128, 64, &Wire, -1);
 
-uint8_t divMode = 0;
 uint8_t ranMode = 0;
 uint8_t ranActiveChannels = 6;
 
@@ -99,37 +98,16 @@ void setup() {
 
     EEPROM.begin();
 
-    // settings
+    // config settings
     clkMode = EEPROM.read(390);
     intClock = EEPROM.read(391);
     bootMode = EEPROM.read(392);
     outMode = EEPROM.read(393);
     resetMode = EEPROM.read(387);
 
-    // step sequencer
-    for (int pa = 0; pa < pages; pa++)
-        for (int ro = 0; ro < rows; ro++)
-            for (int co = 0; co < cols; co++) {
-                int index = pa * rows * cols + ro * cols + co;
-                int safeByteIndex = (index - (index % 8)) / 8;
-                if (safeByteIndex < seqMatrixSize) {
-                    if (EEPROM.read(safeByteIndex) & (1 << (index % 8)))
-                        BitUtils::setBit(pa, ro, co);
-                    else
-                        BitUtils::clearBit(pa, ro, co);
-                }
-            }
-    seqCurrentPage = EEPROM.read(384);
-    seqCurrentLength = EEPROM.read(385);
-    seqCurrentOffset = EEPROM.read(386);
-
-    // clock divider
-    divMode = EEPROM.read(394);
-
-    // random trigger
-    ranMode = EEPROM.read(395);
-    ranActiveChannels = EEPROM.read(396);
-
+    // program settings
+    loadStepSequencerSettings();
+    loadRandomTriggerSettings();
     loadEuclideanSettings();
     loadChannelDividers();
 
@@ -143,10 +121,8 @@ void setup() {
         resetMode = 0;
     if (intClock > 200)
         intClock = 80;
-    if (bootMode > 3)
+    if (bootMode > 4)
         bootMode = 0;
-    if (divMode > 5)
-        divMode = 0;
     if (ranMode > 1)
         ranMode = 0;
     if (ranActiveChannels > 6)

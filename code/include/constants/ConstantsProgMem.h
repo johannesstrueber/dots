@@ -58,10 +58,11 @@ const char outOptionGate[] PROGMEM = "GATE";
 
 const char bootOption1[] PROGMEM = "START";
 const char bootOption2[] PROGMEM = "SEQ";
-const char bootOption3[] PROGMEM = "RND";
-const char bootOption4[] PROGMEM = "DIV";
+const char bootOption3[] PROGMEM = "EUC";
+const char bootOption4[] PROGMEM = "RND";
+const char bootOption5[] PROGMEM = "DIV";
 
-const char *const bootOptions[] PROGMEM = {bootOption1, bootOption2, bootOption3, bootOption4};
+const char *const bootOptions[] PROGMEM = {bootOption1, bootOption2, bootOption3, bootOption4, bootOption5};
 
 // step sequencer
 const char lengthText[] PROGMEM = "LEN";

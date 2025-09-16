@@ -68,6 +68,64 @@ extern const char *const resetOptions[];
 
 enum SeqEncoderOptions { SEQ_ENC_PAGE = 96, SEQ_ENC_LENGTH, SEQ_ENC_OFFSET, SEQ_ENC_PLAY, SEQ_ENC_RESET, SEQ_ENC_BACK };
 
+void saveStepSequencerSettings() {
+    // Save step patterns
+    for (int pa = 0; pa < pages; pa++) {
+        for (int ro = 0; ro < rows; ro++) {
+            for (int co = 0; co < cols; co++) {
+                int index = pa * rows * cols + ro * cols + co;
+                int safeByteIndex = (index - (index % 8)) / 8;
+                if (safeByteIndex < seqMatrixSize) {
+                    if (BitUtils::isBitSet(pa, ro, co)) {
+                        byte currentByte = EEPROM.read(safeByteIndex);
+                        EEPROM.write(safeByteIndex, currentByte | (1 << (index % 8)));
+                    } else {
+                        byte currentByte = EEPROM.read(safeByteIndex);
+                        EEPROM.write(safeByteIndex, currentByte & ~(1 << (index % 8)));
+                    }
+                }
+            }
+        }
+    }
+
+    // Save sequencer parameters
+    EEPROM.write(384, seqCurrentPage);
+    EEPROM.write(385, seqCurrentLength);
+    EEPROM.write(386, seqCurrentOffset);
+}
+
+void loadStepSequencerSettings() {
+    // Load step patterns
+    for (int pa = 0; pa < pages; pa++) {
+        for (int ro = 0; ro < rows; ro++) {
+            for (int co = 0; co < cols; co++) {
+                int index = pa * rows * cols + ro * cols + co;
+                int safeByteIndex = (index - (index % 8)) / 8;
+                if (safeByteIndex < seqMatrixSize) {
+                    if (EEPROM.read(safeByteIndex) & (1 << (index % 8))) {
+                        BitUtils::setBit(pa, ro, co);
+                    } else {
+                        BitUtils::clearBit(pa, ro, co);
+                    }
+                }
+            }
+        }
+    }
+
+    // Load sequencer parameters
+    seqCurrentPage = EEPROM.read(384);
+    seqCurrentLength = EEPROM.read(385);
+    seqCurrentOffset = EEPROM.read(386);
+
+    // Validate ranges
+    if (seqCurrentPage > pages)
+        seqCurrentPage = 1;
+    if (seqCurrentLength > pages)
+        seqCurrentLength = 1;
+    if (seqCurrentOffset > pages)
+        seqCurrentOffset = 0;
+}
+
 char seqBuffer[6];
 
 extern uint8_t page;

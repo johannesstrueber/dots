@@ -60,6 +60,22 @@ extern const char *const ranModeOptions[];
 extern uint8_t randomChannelValues[6];
 extern uint8_t ranActiveChannels;
 
+void saveRandomTriggerSettings() {
+    EEPROM.write(395, ranMode);
+    EEPROM.write(396, ranActiveChannels);
+}
+
+void loadRandomTriggerSettings() {
+    ranMode = EEPROM.read(395);
+    ranActiveChannels = EEPROM.read(396);
+
+    // Validate ranges
+    if (ranMode > 1)
+        ranMode = 0;
+    if (ranActiveChannels < 1 || ranActiveChannels > 6)
+        ranActiveChannels = 6;
+}
+
 void oledRan() {
     DisplayUtils::initDisplay();
 

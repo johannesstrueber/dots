@@ -15,7 +15,6 @@ struct Settings {
     uint8_t bootMode;         // Boot mode selection
     uint8_t resetMode;        // Reset mode
     int8_t msDelay;           // Delay in ms
-    uint8_t divMode;          // Clock divider mode
     uint8_t ranMode;          // Random trigger mode
     uint8_t eucPatternLength; // Euclidean pattern length
     uint8_t reserved[4];      // Reserved for future use
@@ -45,7 +44,6 @@ Settings defaultSettings = {
     .bootMode = 4,           // 0=main menu, 1=step seq, 2=euclidean, 3=random, 4=clock div
     .resetMode = 1,          // Reset mode
     .msDelay = 0,            // No delay
-    .divMode = 5,            // Individual channel dividers (was MODE_INDIVIDUAL)
     .ranMode = 0,            // All channels mode
     .eucPatternLength = 8,   // 8-step Euclidean patterns
     .reserved = {0, 0, 0, 0} // Reserved bytes
@@ -251,7 +249,6 @@ void writeSettings() {
     EEPROM.write(391, 120);                       // intClock
     EEPROM.write(392, defaultSettings.bootMode);  // bootMode
     EEPROM.write(393, defaultSettings.outMode);   // outMode
-    EEPROM.write(394, defaultSettings.divMode);   // divMode
     EEPROM.write(395, defaultSettings.ranMode);   // ranMode
     EEPROM.write(396, 6);                         // ranActiveChannels
     EEPROM.write(397, 16);                        // eucPatternLength (default 16 steps)

@@ -35,7 +35,6 @@ extern bool clkMode;
 extern bool outMode;
 extern uint8_t page;
 
-extern uint8_t divMode;
 extern uint8_t resetMode;
 extern int8_t newPosition;
 extern int8_t oldPosition;
@@ -105,7 +104,6 @@ void oledClockDivider() {
             display.setTextColor(WHITE, BLACK);
         }
 
-        // Add selection ring
         if (isChannelSelected) {
             display.drawCircle(x, y, 11, WHITE);
         }

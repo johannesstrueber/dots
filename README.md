@@ -63,6 +63,18 @@ Check the [website](http://www.d-o-t-s.net) for detailed instructions on how to 
 
 `code/src/eeprom_config.cpp` contains default settings and pattern configurations. It's a standalone, self-contained file (built as its own PlatformIO environment) — modify it directly to customize the initial state of your module.
 
+### Commit Conventions
+
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org) (e.g. `fix: correct rotation clamp`). Running `npm install` once sets up a Husky `pre-push` hook that lints commit messages with [commitlint](https://commitlint.js.org) before they leave your machine.
+
+### Continuous Integration
+
+GitHub Actions builds every PlatformIO environment (`program_via_AVRISPmkII`, `program_via_USBasp`, `eeprom_config_AVRISPmkII`, `eeprom_config_USBasp`) on every push and pull request, and lints PR commit messages as a server-side backstop to the local Husky hook. Further improvements worth adding:
+
+- A [Wokwi CI](https://docs.wokwi.com/vscode/ci) smoke-test job — the repo already ships `diagram.json`/`wokwi.toml`, but there's no scripted test scenario to assert against yet.
+- A flash/RAM usage regression check from `pio run`'s size output, since this target already runs close to its 32KB flash limit.
+- Tagging a GitHub Release with the built `.hex`/`.elf` artifacts on version tags.
+
 ## Repository Structure
 
 - **/code/include/modes**: One header per UI mode (step sequencer, Euclidean sequencer, random trigger, clock divider, config menu, main menu, instructions)

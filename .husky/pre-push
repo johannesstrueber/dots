@@ -1,0 +1,14 @@
+zero="0000000000000000000000000000000000000000"
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$local_sha" = "$zero" ] && continue # deleting a branch, nothing to lint
+
+  if [ "$remote_sha" != "$zero" ]; then
+    from="$remote_sha"
+  else
+    default_branch=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null || echo origin/main)
+    from=$(git merge-base "$local_sha" "$default_branch" 2>/dev/null || git rev-list --max-parents=0 "$local_sha")
+  fi
+
+  npx --no -- commitlint --from "$from" --to "$local_sha" --verbose || exit 1
+done

@@ -1,0 +1,14 @@
+{
+  "name": "dots",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Git tooling for the DOTS firmware/hardware repository (no build step - firmware is built with PlatformIO)",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "husky": "^9.1.7"
+  }
+}

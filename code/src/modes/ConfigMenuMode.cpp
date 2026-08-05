@@ -1,66 +1,30 @@
-#ifndef CONFIG_MENU_H
-#define CONFIG_MENU_H
+#include "modes/ConfigMenuMode.h"
 
-#include "utilities/Display.h"
-#include "utilities/Encoder.h"
-#include "utilities/MenuLayout.h"
+#include "State.h"
+#include "UiStrings.h"
+#include "modes/ClockDividerMode.h"
+#include "modes/EuclideanSequencerMode.h"
+#include "modes/RandomTriggerMode.h"
+#include "modes/StepSequencerMode.h"
+#include "utilities/DisplayUtils.h"
+#include "utilities/EncoderUtils.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 #include <EEPROM.h>
 #include <Encoder.h>
-#include <Wire.h>
 
-extern Encoder Enc;
-extern int8_t enc;
-
-extern Adafruit_SSD1306 display;
-int8_t configMenuOptionCount = 6;
-
+namespace {
 enum ConfigOptions { CLK, BPM, OUT, BOOT, SAVE, BACK };
+constexpr int8_t CONFIG_MENU_OPTION_COUNT = 6;
+} // namespace
 
-extern const char clkOptionInt[];
-extern const char clkOptionExt[];
+void renderConfigMenuScreen() {
+    static char configBuffer[5];
 
-extern const char outOptionTrig[];
-extern const char outOptionGate[];
-
-extern const char *const bootOptions[];
-
-extern bool clkMode;
-extern bool outMode;
-extern uint8_t bootMode;
-extern uint8_t page;
-extern uint8_t intClock;
-extern uint8_t bpm;
-
-extern bool encLock;
-extern uint8_t ranMode;
-extern uint8_t ranActiveChannels;
-
-void saveEuclideanSettings();
-void loadEuclideanSettings();
-void saveStepSequencerSettings();
-void saveRandomTriggerSettings();
-void saveChannelDividers();
-
-extern const uint8_t seqMatrixSize;
-extern byte seqMatrix[seqMatrixSize];
-
-extern uint8_t seqCurrentOffset;
-extern uint8_t seqCurrentLength;
-extern uint8_t seqCurrentPage;
-extern uint8_t resetMode;
-extern bool isPause;
-
-extern bool updateScreen;
-extern bool buttonOn;
-
-void oledConfigMenu() {
     DisplayUtils::initDisplay();
-    char configBuffer[5];
 
-    for (int i = 0; i < configMenuOptionCount; i++) {
+    for (int i = 0; i < CONFIG_MENU_OPTION_COUNT; i++) {
         DisplayUtils::drawMenuItemFromArray(0, i * 9, configMenuOptions, i, enc == i, configBuffer);
     }
 
@@ -83,7 +47,7 @@ void oledConfigMenu() {
     display.display();
 }
 
-void configMenuLoop() {
+void updateConfigMenu() {
     int8_t newPosition = Enc.read();
     static int8_t oldPosition = -2;
 
@@ -101,7 +65,7 @@ void configMenuLoop() {
     else if (intClock < 10)
         intClock = 10;
 
-    EncoderUtils::handleEncoderBounds(enc, 0, configMenuOptionCount - 1);
+    EncoderUtils::handleEncoderBounds(enc, 0, CONFIG_MENU_OPTION_COUNT - 1);
 
     if (buttonOn)
         switch (enc) {
@@ -130,19 +94,17 @@ void configMenuLoop() {
                 // program settings
                 saveStepSequencerSettings();
                 saveRandomTriggerSettings();
-                saveEuclideanSettings();
-                saveChannelDividers();
+                saveEuclideanSequencerSettings();
+                saveClockDividerSettings();
                 break;
             case BACK:
                 updateScreen = true;
-                page = 0;
+                page = MAIN_MENU;
                 break;
             default:
                 break;
         }
 
     if (updateScreen)
-        oledConfigMenu();
+        renderConfigMenuScreen();
 }
-
-#endif

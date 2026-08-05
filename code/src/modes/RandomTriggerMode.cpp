@@ -1,64 +1,25 @@
-#ifndef RANDOM_TRIGGER_H
-#define RANDOM_TRIGGER_H
+#include "modes/RandomTriggerMode.h"
 
-#include "utilities/Display.h"
-#include "utilities/Encoder.h"
+#include "State.h"
+#include "UiStrings.h"
+#include "utilities/DisplayUtils.h"
+#include "utilities/EncoderUtils.h"
 #include "utilities/MenuLayout.h"
-#include "utilities/PatternMath.h"
-#include "utilities/Trigger.h"
+#include "utilities/TriggerUtils.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
-#include <Wire.h>
+#include <EEPROM.h>
+#include <Encoder.h>
 
-extern bool updateScreen;
-extern bool updateTrigger;
-extern int8_t enc;
-extern int8_t numChannels;
+namespace {
 
-extern const uint8_t outputPins[];
-extern bool resetIn;
-extern bool oldResetIn;
-extern bool buttonOn;
-extern bool isPause;
-
-extern int8_t newPosition;
-extern int8_t oldPosition;
-
-extern uint8_t page;
-
-extern Adafruit_SSD1306 display;
-extern Encoder Enc;
-
-extern int8_t msDelay;
-extern uint8_t bpm;
-extern uint8_t intClock;
-extern uint8_t stepCount;
-
-extern bool outMode;
-extern bool clkMode;
-extern uint8_t ranMode;
-
-extern const char playText[];
-extern const char pauseText[];
-extern const char backText[];
-extern const char stepIndexText[];
-extern const char channelIndexText[];
-
-char ranBuffer[5];
+enum RanEncoderOptions { RAN_ENC_CHANNELS = 7, RAN_ENC_MODE, RAN_ENC_PLAY, RAN_ENC_RESET, RAN_ENC_BACK };
+enum RanModeOptions { RAN_MODE_ALL, RAN_MODE_SEQ, RAN_MODE_STEP };
 
 bool channelTriggered[6] = {false, false, false, false, false, false};
 
-enum RanEncoderOptions { RAN_ENC_CHANNELS = 7, RAN_ENC_MODE, RAN_ENC_PLAY, RAN_ENC_RESET, RAN_ENC_BACK };
-
-extern const char *const resetOptions[];
-
-enum RanModeOptions { RAN_MODE_ALL, RAN_MODE_SEQ, RAN_MODE_STEP };
-
-extern const char *const ranModeOptions[];
-
-extern uint8_t randomChannelValues[6];
-extern uint8_t ranActiveChannels;
+} // namespace
 
 void saveRandomTriggerSettings() {
     EEPROM.write(395, ranMode);
@@ -76,7 +37,9 @@ void loadRandomTriggerSettings() {
         ranActiveChannels = 6;
 }
 
-void oledRan() {
+void renderRandomTriggerScreen() {
+    static char ranBuffer[5];
+
     DisplayUtils::initDisplay();
 
     for (int i = 0; i < ranActiveChannels; i++) {
@@ -118,9 +81,9 @@ void oledRan() {
     DisplayUtils::drawMenuItemFromArray(64, MenuLayout::MENU_Y_BOTTOM, resetOptions, resetMode, enc == RAN_ENC_RESET, ranBuffer);
     DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_BOTTOM, backText, enc == RAN_ENC_BACK, ranBuffer);
     display.display();
-};
+}
 
-void randomLoop() {
+void updateRandomTrigger() {
     int8_t newPosition = Enc.read();
     static int8_t oldPosition = -2;
     static int8_t oldEnc = 0;
@@ -164,8 +127,8 @@ void randomLoop() {
                     ranActiveChannels++;
                 break;
             case RAN_ENC_MODE:
-                if (ranMode == 1)
-                    ranMode = 0;
+                if (ranMode == RAN_MODE_SEQ)
+                    ranMode = RAN_MODE_ALL;
                 else
                     ranMode++;
                 break;
@@ -173,13 +136,13 @@ void randomLoop() {
                 EncoderUtils::toggleParameter(isPause);
                 break;
             case RAN_ENC_RESET:
-                if (resetMode == 3)
-                    resetMode = 0;
+                if (resetMode == STEP_BACK)
+                    resetMode = RESET;
                 else
                     resetMode++;
                 break;
             case RAN_ENC_BACK:
-                page = 0;
+                page = MAIN_MENU;
                 updateScreen = true;
                 break;
             default:
@@ -187,7 +150,7 @@ void randomLoop() {
                 break;
         }
 
-    oledRan();
+    renderRandomTriggerScreen();
     if (updateTrigger)
         for (int i = 0; i < ranActiveChannels; i++) {
             int trigger = random(0, 10) < randomChannelValues[i];
@@ -216,5 +179,3 @@ void randomLoop() {
     delay(30);
     TriggerUtils::applyDelay(msDelay);
 }
-
-#endif

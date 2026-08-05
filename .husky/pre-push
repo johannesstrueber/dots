@@ -12,3 +12,26 @@ while read -r local_ref local_sha remote_ref remote_sha; do
 
   npx --no -- commitlint --from "$from" --to "$local_sha" --verbose || exit 1
 done
+
+pio_bin=""
+for candidate in "$(command -v pio 2>/dev/null)" "$HOME/.local/bin/pio" "$HOME/.platformio/penv/bin/pio"; do
+  if [ -n "$candidate" ] && [ -x "$candidate" ]; then
+    pio_bin="$candidate"
+    break
+  fi
+done
+
+if [ -z "$pio_bin" ]; then
+  echo "error: PlatformIO CLI ('pio') not found, cannot verify the firmware builds before push." >&2
+  echo "Install it with: pipx install platformio  (or: pip install --user platformio)" >&2
+  echo "Then re-run 'git push'." >&2
+  exit 1
+fi
+
+echo "Building all PlatformIO environments before push..."
+"$pio_bin" run \
+  -e program_via_AVRISPmkII \
+  -e program_via_USBasp \
+  -e eeprom_config_AVRISPmkII \
+  -e eeprom_config_USBasp \
+  || exit 1

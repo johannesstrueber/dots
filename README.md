@@ -57,17 +57,22 @@ Check the [website](http://www.d-o-t-s.net) for detailed instructions on how to 
 1. **Prerequisites**: Install [PlatformIO](https://platformio.org) and [Git](https://git-scm.com)
 2. **Clone**: `git clone https://github.com/johannesstrueber/dots.git`
 3. **Build**: `platformio run`
-4. **Flash**: Use `./flash_sequencer.sh` for automated flashing with default patterns
+4. **Flash**: Use `./flash_module.sh` for automated flashing with default patterns
 
 ### Editing EEPROM Configuration
 
-eeprom_config.cpp contains default settings and pattern configurations. Modify this file to customize the initial state of your module.
+`code/src/eeprom_config.cpp` contains default settings and pattern configurations. It's a standalone, self-contained file (built as its own PlatformIO environment) — modify it directly to customize the initial state of your module.
 
 ## Repository Structure
 
-- **/code/include**: Header files and module implementations
-- **/code/src/main.cpp**: Main firmware entry point
-- **/code/src/eeprom_config.cpp**: Default settings and pattern configuration
+- **/code/include/modes**: One header per UI mode (step sequencer, Euclidean sequencer, random trigger, clock divider, config menu, main menu, instructions)
+- **/code/include/utilities**: Shared helpers (display drawing, encoder handling, bit/pattern math, trigger output, reset handling, startup/splash screens)
+- **/code/include/State.h**: Shared enums and global state declarations used across modes
+- **/code/include/UiStrings.h**: PROGMEM-stored UI text/labels
+- **/code/src/modes**: Implementation of each mode header above
+- **/code/src/utilities**: Implementation of the shared helpers above
+- **/code/src/main.cpp**: Main firmware entry point (`setup()`/`loop()`)
+- **/code/src/eeprom_config.cpp**: Default settings and pattern configuration, built as its own PlatformIO environment
 - **/kicad_frontpanel**: Front panel PCB design files ([KiCad](https://kicad.org))
 - **/kicad_main**: Main PCB design files ([KiCad](https://kicad.org))
 - **diagram.json**: Hardware simulation ([WOKWI](https://wokwi.com))

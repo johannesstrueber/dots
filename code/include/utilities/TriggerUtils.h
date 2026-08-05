@@ -1,10 +1,8 @@
 #ifndef TRIGGER_UTILS_H
 #define TRIGGER_UTILS_H
 
+#include "State.h"
 #include <Arduino.h>
-
-extern const uint8_t outputPins[];
-extern int8_t numChannels;
 
 class TriggerUtils {
   public:

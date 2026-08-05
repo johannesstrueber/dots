@@ -2,6 +2,9 @@
 /design
 /3d
 
+node_modules/
+npm-debug.log*
+
 
 kicad_main/main-backups
 kicad_main/jlcpcb

@@ -1,7 +1,16 @@
-#include "constants/ConstantsProgMem.h"
-#include "utilities/Bit.h"
+#include "State.h"
+
+#include "modes/ClockDividerMode.h"
+#include "modes/ConfigMenuMode.h"
+#include "modes/EuclideanSequencerMode.h"
+#include "modes/InstructionsMode.h"
+#include "modes/MainMenuMode.h"
+#include "modes/RandomTriggerMode.h"
+#include "modes/StepSequencerMode.h"
+#include "utilities/ResetHandler.h"
 #include "utilities/SplashScreen.h"
 #include "utilities/Startup.h"
+#include "utilities/TriggerUtils.h"
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -10,81 +19,6 @@
 #include <Encoder.h>
 #include <Wire.h>
 #include <avr/pgmspace.h>
-
-const uint8_t outputPins[] = {5, 6, 7, 8, 9, 10};
-int8_t numChannels = 6;
-
-bool clockIn = false;
-bool oldClockIn = false;
-bool resetIn = false;
-bool oldResetIn = false;
-
-Encoder Enc(3, 2);
-int8_t enc = 0;
-bool encLock = false;
-
-const uint8_t rows = 6;
-const uint8_t cols = 16;
-const uint8_t pages = 8;
-const uint8_t barLength = 4;
-
-const uint8_t seqMatrixSize = pages * rows * cols / 8;
-byte seqMatrix[seqMatrixSize];
-
-uint8_t randomChannelValues[6] = {0, 0, 0, 0, 0, 0};
-
-uint8_t seqCurrentPage = 1;
-uint8_t seqCurrentLength = 1;
-uint8_t seqCurrentOffset = 0;
-uint8_t resetMode = 0;
-
-uint8_t page = 0;
-uint8_t bootMode = 0;
-
-bool isPause = false;
-uint8_t bpm;
-uint16_t beatAtMs[4] = {0, 0, 0, 0};
-
-bool clkMode = true;
-bool outMode = true;
-uint8_t intClock = 120;
-
-uint8_t stepCount = 0;
-
-Adafruit_SSD1306 display(128, 64, &Wire, -1);
-
-uint8_t ranMode = 0;
-uint8_t ranActiveChannels = 6;
-
-enum MainPages { MAIN_MENU, SEQUENCER, EUCLIDEAN_SEQUENCER, RANDOM_TRIGGER, CLOCK_DIVIDER, CONFIG, INSTRUCTIONS };
-
-int8_t newPosition = 2;
-int8_t oldPosition = -2;
-
-bool updateScreen = true;
-bool updateTrigger = true;
-bool needsThrottledUpdate = false;
-bool button = false;
-bool oldButton = false;
-bool buttonOn = false;
-
-int16_t potIn = 0;
-int8_t randomValuePotIn = 0;
-int8_t msDelay = 0;
-
-unsigned long lastScreenUpdate = 0;
-const unsigned long SCREEN_UPDATE_INTERVAL = 200;
-
-unsigned long lastInternalClockStep = 0;
-
-#include "ClockDivider.h"
-#include "ConfigMenu.h"
-#include "EuclideanSequencer.h"
-#include "Instructions.h"
-#include "MainMenu.h"
-#include "RandomTrigger.h"
-#include "StepSequencer.h"
-#include "utilities/HandleReset.h"
 
 void setup() {
     pinMode(A0, INPUT);       // POT
@@ -108,8 +42,8 @@ void setup() {
     // program settings
     loadStepSequencerSettings();
     loadRandomTriggerSettings();
-    loadEuclideanSettings();
-    loadChannelDividers();
+    loadEuclideanSequencerSettings();
+    loadClockDividerSettings();
 
     if (seqCurrentPage > pages)
         seqCurrentPage = 1;
@@ -117,8 +51,8 @@ void setup() {
         seqCurrentLength = 1;
     if (seqCurrentOffset > pages)
         seqCurrentOffset = 0;
-    if (resetMode > 5)
-        resetMode = 0;
+    if (resetMode > SEQ_PAGE_RANDOM)
+        resetMode = RESET;
     if (intClock > 200)
         intClock = 80;
     if (bootMode > 4)
@@ -143,10 +77,10 @@ void setup() {
     if (ranActiveChannels < 1)
         ranActiveChannels = 1;
 
-    page = bootMode;
+    page = static_cast<AppPage>(bootMode);
 
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-    splashScreen();
+    showSplashScreen();
     startupBlink();
 
     updateEuclideanPatterns();
@@ -170,7 +104,7 @@ void loop() {
     } else
         buttonOn = false;
 
-    if (!isPause && page != 0) {
+    if (!isPause && page != MAIN_MENU) {
         if (!oldClockIn && clockIn && !clkMode) {
             beatAtMs[3] = beatAtMs[2];
             beatAtMs[2] = beatAtMs[1];
@@ -235,25 +169,25 @@ void loop() {
         lastScreenUpdate = millis();
         switch (page) {
             case MAIN_MENU:
-                mainMenuLoop();
+                updateMainMenu();
                 break;
             case SEQUENCER:
-                sequencerLoop();
+                updateStepSequencer();
                 break;
             case EUCLIDEAN_SEQUENCER:
-                euclideanLoop();
+                updateEuclideanSequencer();
                 break;
             case RANDOM_TRIGGER:
-                randomLoop();
+                updateRandomTrigger();
                 break;
             case CLOCK_DIVIDER:
-                clockDividerLoop();
+                updateClockDivider();
                 break;
             case CONFIG:
-                configMenuLoop();
+                updateConfigMenu();
                 break;
             case INSTRUCTIONS:
-                instructionsLoop();
+                updateInstructions();
                 break;
         }
     }

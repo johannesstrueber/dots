@@ -1,67 +1,32 @@
-#ifndef CLOCK_DIVIDER_H
-#define CLOCK_DIVIDER_H
+#include "modes/ClockDividerMode.h"
 
-#include "utilities/Display.h"
-#include "utilities/Encoder.h"
+#include "State.h"
+#include "UiStrings.h"
+#include "utilities/DisplayUtils.h"
+#include "utilities/EncoderUtils.h"
 #include "utilities/MenuLayout.h"
 #include "utilities/PatternMath.h"
-#include "utilities/Trigger.h"
+#include "utilities/TriggerUtils.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 #include <EEPROM.h>
-#include <Wire.h>
 
-extern int8_t numChannels;
-extern const uint8_t outputPins[];
-
-extern uint8_t bpm;
-
-extern uint8_t stepCount;
-extern bool resetIn;
-extern bool oldResetIn;
-extern bool isPause;
-extern bool button;
-extern bool oldButton;
-extern bool buttonOn;
-
-extern int8_t enc;
-extern Adafruit_SSD1306 display;
+namespace {
 
 enum DivEncoderOptions { DIV_ENC_CH1, DIV_ENC_CH2, DIV_ENC_CH3, DIV_ENC_CH4, DIV_ENC_CH5, DIV_ENC_CH6, DIV_ENC_PLAY, DIV_ENC_RESET, DIV_ENC_BACK };
 
-extern uint8_t intClock;
-extern bool clkMode;
-extern bool outMode;
-extern uint8_t page;
-
-extern uint8_t resetMode;
-extern int8_t newPosition;
-extern int8_t oldPosition;
-extern int8_t msDelay;
-
-char divBuffer[5];
-
-extern const char playText[];
-extern const char pauseText[];
-extern const char backText[];
-extern const char unselectedText[];
-extern const char channelIndexText[];
-
-extern const char *const resetOptions[];
-
-extern bool updateTrigger;
-extern bool updateScreen;
-
 uint8_t channelDividers[6] = {1, 2, 4, 3, 6, 8};
 
-void saveChannelDividers() {
+} // namespace
+
+void saveClockDividerSettings() {
     for (int i = 0; i < 6; i++) {
         EEPROM.write(422 + i, channelDividers[i]);
     }
 }
 
-void loadChannelDividers() {
+void loadClockDividerSettings() {
     for (int i = 0; i < 6; i++) {
         uint8_t value = EEPROM.read(422 + i);
         if (value >= 1 && value <= 16) {
@@ -72,7 +37,9 @@ void loadChannelDividers() {
     }
 }
 
-void oledClockDivider() {
+void renderClockDividerScreen() {
+    static char divBuffer[5];
+
     DisplayUtils::initDisplay();
 
     DisplayUtils::drawMenuSeparator();
@@ -118,7 +85,7 @@ void oledClockDivider() {
     display.display();
 }
 
-void clockDividerLoop() {
+void updateClockDivider() {
     bool needsDisplayUpdate = false;
     int8_t oldEnc = enc;
 
@@ -154,18 +121,18 @@ void clockDividerLoop() {
                 if (channelDividers[channelIndex] > 16) {
                     channelDividers[channelIndex] = 1;
                 }
-                saveChannelDividers();
+                saveClockDividerSettings();
                 needsDisplayUpdate = true;
             } break;
             case DIV_ENC_RESET:
-                if (resetMode == 1)
-                    resetMode = 0;
+                if (resetMode == NONE)
+                    resetMode = RESET;
                 else
                     resetMode++;
                 needsDisplayUpdate = true;
                 break;
             case DIV_ENC_BACK:
-                page = 0;
+                page = MAIN_MENU;
                 updateScreen = true;
                 return;
         }
@@ -189,11 +156,9 @@ void clockDividerLoop() {
     }
 
     if (needsDisplayUpdate || updateScreen) {
-        oledClockDivider();
+        renderClockDividerScreen();
         updateScreen = false;
     }
 
     TriggerUtils::applyDelay(msDelay);
 }
-
-#endif

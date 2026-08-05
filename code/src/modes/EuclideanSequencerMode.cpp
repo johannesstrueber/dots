@@ -1,63 +1,21 @@
-#ifndef EUCLIDEAN_SEQUENCER_H
-#define EUCLIDEAN_SEQUENCER_H
+#include "modes/EuclideanSequencerMode.h"
 
+#include "State.h"
+#include "UiStrings.h"
+#include "utilities/DisplayUtils.h"
+#include "utilities/EncoderUtils.h"
+#include "utilities/MenuLayout.h"
+#include "utilities/PatternMath.h"
+#include "utilities/TriggerUtils.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 #include <EEPROM.h>
-#include <Encoder.h>
-#include <Wire.h>
-
-#include "utilities/Display.h"
-#include "utilities/Encoder.h"
-#include "utilities/MenuLayout.h"
-#include "utilities/PatternMath.h"
-#include "utilities/Trigger.h"
-
-extern Adafruit_SSD1306 display;
-extern Encoder Enc;
-extern int8_t enc;
-extern bool updateScreen;
-extern bool updateTrigger;
-extern bool buttonOn;
-extern uint8_t stepCount;
-extern uint8_t page;
-extern bool isPause;
-extern const uint8_t outputPins[];
-extern int8_t numChannels;
-extern int16_t potIn;
-extern int8_t msDelay;
-
-struct EuclideanTrack {
-    uint8_t steps;
-    uint8_t hits;
-    uint8_t rotation;
-    bool mute;
-    uint32_t pattern;
-};
-
-extern const char channelIndexText[];
-extern const char stepIndexText[];
-extern const char lengthIndexText[];
-extern const char backText[];
-extern const char playText[];
-extern const char pauseText[];
-
-extern const char eucHitsText[];
-extern const char eucRotationText[];
-extern const char eucMuteText[];
-extern const char eucLiveText[];
-
-extern const char *const resetOptions[];
-extern uint8_t resetMode;
-
-char eucBuffer[5];
 
 EuclideanTrack eucTracks[6] = {{16, 4, 0, false, 0}, {16, 3, 0, false, 0}, {12, 5, 0, false, 0}, {8, 3, 0, false, 0}, {16, 7, 0, false, 0}, {16, 2, 0, false, 0}};
-
-uint8_t eucCurrentTrack = 0;
 uint8_t eucPatternLength = 16;
-uint8_t eucCurrentStep = 0;
+
+namespace {
 
 enum EuclideanEncoderOptions {
     EUC_ENC_CHANNEL_1 = 1,
@@ -75,20 +33,8 @@ enum EuclideanEncoderOptions {
     EUC_ENC_BACK
 };
 
-uint32_t generateEuclideanPattern(uint8_t steps, uint8_t hits) {
-    return PatternMath::generateEuclideanPattern(steps, hits);
-}
-
-uint32_t rotatePattern(uint32_t pattern, uint8_t steps, uint8_t rotation) {
-    return PatternMath::rotatePattern(pattern, steps, rotation);
-}
-
-void updateEuclideanPatterns() {
-    for (int i = 0; i < 6; i++) {
-        uint32_t basePattern = generateEuclideanPattern(eucTracks[i].steps, eucTracks[i].hits);
-        eucTracks[i].pattern = rotatePattern(basePattern, eucTracks[i].steps, eucTracks[i].rotation);
-    }
-}
+uint8_t eucCurrentTrack = 0;
+uint8_t eucCurrentStep = 0;
 
 bool isEuclideanStepActive(uint8_t track, uint8_t step) {
     if (track >= 6)
@@ -171,7 +117,40 @@ void drawPolygon(uint8_t centerX, uint8_t centerY, uint8_t radius, uint8_t steps
     }
 }
 
-void oledEuclidean() {
+} // namespace
+
+void updateEuclideanPatterns() {
+    for (int i = 0; i < 6; i++) {
+        uint32_t basePattern = PatternMath::generateEuclideanPattern(eucTracks[i].steps, eucTracks[i].hits);
+        eucTracks[i].pattern = PatternMath::rotatePattern(basePattern, eucTracks[i].steps, eucTracks[i].rotation);
+    }
+}
+
+void saveEuclideanSequencerSettings() {
+    EEPROM.write(397, eucPatternLength);
+    for (int i = 0; i < 6; i++) {
+        int baseAddr = 398 + (i * 4);
+        EEPROM.write(baseAddr, eucTracks[i].steps);
+        EEPROM.write(baseAddr + 1, eucTracks[i].hits);
+        EEPROM.write(baseAddr + 2, eucTracks[i].rotation);
+        EEPROM.write(baseAddr + 3, eucTracks[i].mute);
+    }
+}
+
+void loadEuclideanSequencerSettings() {
+    eucPatternLength = EEPROM.read(397);
+    for (int i = 0; i < 6; i++) {
+        int baseAddr = 398 + (i * 4);
+        eucTracks[i].steps = EEPROM.read(baseAddr);
+        eucTracks[i].hits = EEPROM.read(baseAddr + 1);
+        eucTracks[i].rotation = EEPROM.read(baseAddr + 2);
+        eucTracks[i].mute = EEPROM.read(baseAddr + 3);
+    }
+}
+
+void renderEuclideanSequencerScreen() {
+    static char eucBuffer[5];
+
     DisplayUtils::initDisplay();
 
     for (int ch = 0; ch < 6; ch++) {
@@ -229,29 +208,7 @@ void oledEuclidean() {
     display.display();
 }
 
-void saveEuclideanSettings() {
-    EEPROM.write(397, eucPatternLength);
-    for (int i = 0; i < 6; i++) {
-        int baseAddr = 398 + (i * 4);
-        EEPROM.write(baseAddr, eucTracks[i].steps);
-        EEPROM.write(baseAddr + 1, eucTracks[i].hits);
-        EEPROM.write(baseAddr + 2, eucTracks[i].rotation);
-        EEPROM.write(baseAddr + 3, eucTracks[i].mute);
-    }
-}
-
-void loadEuclideanSettings() {
-    eucPatternLength = EEPROM.read(397);
-    for (int i = 0; i < 6; i++) {
-        int baseAddr = 398 + (i * 4);
-        eucTracks[i].steps = EEPROM.read(baseAddr);
-        eucTracks[i].hits = EEPROM.read(baseAddr + 1);
-        eucTracks[i].rotation = EEPROM.read(baseAddr + 2);
-        eucTracks[i].mute = EEPROM.read(baseAddr + 3);
-    }
-}
-
-void euclideanLoop() {
+void updateEuclideanSequencer() {
     bool needsDisplayUpdate = false;
     int8_t oldEnc = enc;
     isPause = false;
@@ -322,10 +279,7 @@ void euclideanLoop() {
                     }
 
                     if (anyTrackAdjusted) {
-                        for (int i = 0; i < 6; i++) {
-                            uint32_t basePattern = PatternMath::generateEuclideanPattern(eucTracks[i].steps, eucTracks[i].hits);
-                            eucTracks[i].pattern = PatternMath::rotatePattern(basePattern, eucTracks[i].steps, eucTracks[i].rotation);
-                        }
+                        updateEuclideanPatterns();
                     }
 
                     needsDisplayUpdate = true;
@@ -333,12 +287,12 @@ void euclideanLoop() {
                 }
 
                 case EUC_ENC_RESET:
-                    EncoderUtils::cycleEnum(resetMode, 3);
+                    EncoderUtils::cycleEnum(resetMode, STEP_BACK);
                     needsDisplayUpdate = true;
                     break;
 
                 case EUC_ENC_BACK:
-                    page = 0;
+                    page = MAIN_MENU;
                     updateScreen = true;
                     break;
             }
@@ -369,9 +323,7 @@ void euclideanLoop() {
     }
 
     if (needsDisplayUpdate || updateScreen) {
-        oledEuclidean();
+        renderEuclideanSequencerScreen();
         updateScreen = false;
     }
 }
-
-#endif

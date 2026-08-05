@@ -1,8 +1,4 @@
-#ifndef CONSTANTS_PROG_MEM_H
-#define CONSTANTS_PROG_MEM_H
-
-#include <Arduino.h>
-#include <avr/pgmspace.h>
+#include "UiStrings.h"
 
 // main menu
 const char headerText[] PROGMEM = "SELECT MODE";
@@ -82,5 +78,3 @@ const char *const ranModeOptions[] PROGMEM = {
     ranModeOption1,
     ranModeOption2,
 };
-
-#endif

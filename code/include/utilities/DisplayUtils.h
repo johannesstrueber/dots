@@ -1,16 +1,11 @@
 #ifndef DISPLAY_UTILS_H
 #define DISPLAY_UTILS_H
 
+#include "State.h"
+#include "UiStrings.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <avr/pgmspace.h>
-
-extern Adafruit_SSD1306 display;
-extern const char stepIndexText[];
-extern const char delayIndexText[];
-extern const char bpmIndexText[];
-extern const char slashText[];
-extern const char pagesIndexText[];
 
 class DisplayUtils {
   private:

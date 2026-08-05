@@ -1,14 +1,8 @@
-
 #ifndef BIT_UTILS_H
 #define BIT_UTILS_H
 
+#include "State.h"
 #include <Arduino.h>
-
-extern const uint8_t seqMatrixSize;
-extern byte seqMatrix[];
-extern const uint8_t pages;
-extern const uint8_t rows;
-extern const uint8_t cols;
 
 class BitUtils {
   public:

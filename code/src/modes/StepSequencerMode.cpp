@@ -1,72 +1,35 @@
-#ifndef SEQUENCER_H
-#define SEQUENCER_H
+#include "modes/StepSequencerMode.h"
 
-#include "utilities/Bit.h"
-#include "utilities/Display.h"
-#include "utilities/Encoder.h"
+#include "State.h"
+#include "UiStrings.h"
+#include "utilities/BitUtils.h"
+#include "utilities/DisplayUtils.h"
+#include "utilities/EncoderUtils.h"
 #include "utilities/MenuLayout.h"
-#include "utilities/PatternMath.h"
-#include "utilities/Trigger.h"
+#include "utilities/TriggerUtils.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Arduino.h>
 #include <EEPROM.h>
-#include <Encoder.h>
-#include <Wire.h>
 
-#define OLED_ADDRESS 0x3C
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
-#define RECT_WIDTH 8
-#define RECT_HEIGHT 7
-#define RECT_SPACING_X 0
-#define RECT_SPACING_Y 0
+namespace {
 
-extern int8_t numChannels;
-extern const uint8_t outputPins[];
+constexpr uint8_t RECT_WIDTH = 8;
+constexpr uint8_t RECT_HEIGHT = 7;
 
-extern const uint8_t rows;
-extern const uint8_t cols;
-extern const uint8_t pages;
-extern const uint8_t barLength;
+enum SeqEncoderOptions { SEQ_ENC_PAGE = 96, SEQ_ENC_LENGTH, SEQ_ENC_OFFSET, SEQ_ENC_PLAY, SEQ_ENC_RESET, SEQ_ENC_BACK };
 
-extern uint8_t seqCurrentOffset;
-extern uint8_t seqCurrentLength;
-extern uint8_t seqCurrentPage;
-
-extern uint8_t resetMode;
-uint8_t previousPage = 0;
-
-extern int16_t potIn;
-extern int8_t randomValuePotIn;
-extern int8_t msDelay;
 uint8_t markerRow = 0;
 uint8_t markerCol = 0;
 
-extern const uint8_t seqMatrixSize;
-extern byte seqMatrix[seqMatrixSize];
-extern uint8_t stepCount;
-extern bool isPause;
+void toggleMatrixCell(int page, int row, int col) {
+    if (BitUtils::isBitSet(page, row, col))
+        BitUtils::clearBit(page, row, col);
+    else
+        BitUtils::setBit(page, row, col);
+}
 
-extern Encoder Enc;
-extern int8_t enc;
-extern bool updateScreen;
-extern bool updateTrigger;
-
-extern Adafruit_SSD1306 display;
-
-extern const char playText[];
-extern const char pauseText[];
-extern const char backText[];
-
-extern const char lengthText[];
-extern const char offsetText[];
-extern const char pagesIndexText[];
-extern const char slashText[];
-
-extern const char *const resetOptions[];
-
-enum SeqEncoderOptions { SEQ_ENC_PAGE = 96, SEQ_ENC_LENGTH, SEQ_ENC_OFFSET, SEQ_ENC_PLAY, SEQ_ENC_RESET, SEQ_ENC_BACK };
+} // namespace
 
 void saveStepSequencerSettings() {
     // Save step patterns
@@ -126,26 +89,9 @@ void loadStepSequencerSettings() {
         seqCurrentOffset = 0;
 }
 
-char seqBuffer[6];
+void renderStepSequencerScreen() {
+    static char seqBuffer[6];
 
-extern uint8_t page;
-
-extern bool clkMode;
-extern bool outMode;
-extern uint8_t bpm;
-extern uint8_t intClock;
-
-extern int8_t newPosition;
-extern int8_t oldPosition;
-
-extern bool buttonOn;
-extern bool oldButton;
-extern bool button;
-
-extern bool resetIn;
-extern bool oldResetIn;
-
-void oledSeq() {
     display.setCursor(0, 0);
 
     if (enc > 0 || enc < SEQ_ENC_PAGE || previousPage != seqCurrentPage) {
@@ -193,16 +139,9 @@ void oledSeq() {
     DisplayUtils::drawMenuItemProgMem(96, MenuLayout::MENU_Y_BOTTOM, backText, enc == SEQ_ENC_BACK, seqBuffer);
 
     display.display();
-};
-
-void toggleMatrixCell(int page, int row, int col) {
-    if (BitUtils::isBitSet(page, row, col))
-        BitUtils::clearBit(page, row, col);
-    else
-        BitUtils::setBit(page, row, col);
 }
 
-void sequencerLoop() {
+void updateStepSequencer() {
     updateScreen = false;
 
     TriggerUtils::applyDelay(msDelay);
@@ -239,8 +178,8 @@ void sequencerLoop() {
                 }
                 break;
             case SEQ_ENC_RESET:
-                if (resetMode == 5)
-                    resetMode = 0;
+                if (resetMode == SEQ_PAGE_RANDOM)
+                    resetMode = RESET;
                 else
                     resetMode++;
                 break;
@@ -248,7 +187,7 @@ void sequencerLoop() {
                 EncoderUtils::toggleParameter(isPause);
                 break;
             case SEQ_ENC_BACK:
-                page = 0;
+                page = MAIN_MENU;
                 updateScreen = true;
                 break;
             default:
@@ -278,9 +217,7 @@ void sequencerLoop() {
         updateTrigger = false;
     }
 
-    oledSeq();
+    renderStepSequencerScreen();
 
     TriggerUtils::applyDelay(msDelay);
 }
-
-#endif
